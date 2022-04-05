@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
+import "hardhat/console.sol";
+
 contract DocumentVerification {
     enum VerificationType {
         INVALID,
@@ -38,5 +40,13 @@ contract DocumentVerification {
         document.documentDeadline = documentDeadline;
         document.verificationType = verificationType;
         document.requestedSigners = requestedSigners;
+    }
+
+    function signDocument(bytes32 documentHash) external {
+        // add signature to document
+        Sign memory sign = Sign({ signer: msg.sender, timestamp: block.timestamp });
+        _signatures[documentHash].push(sign);
+
+        console.log("Document signed by: %s", msg.sender);
     }
 }
