@@ -45,6 +45,17 @@ contract DocumentVerification {
     }
 
     function signDocument(bytes32 documentHash) external {
+        Document memory document = _documents[documentHash];
+        require(document.verificationDeadline > block.timestamp, "DocumentVerification: deadline is over to sign");
+        require(
+            _isSignerRequestedByDocument(documentHash, msg.sender),
+            "DocumentVerification: signer is not requested by document"
+        );
+        require(
+            !_isSignerSignedTheDocument(documentHash, msg.sender),
+            "DocumentVerification: signer already signed the document"
+        );
+
         // add signature to document
         Sign memory sign = Sign({ signer: msg.sender, timestamp: block.timestamp });
         _signatures[documentHash].push(sign);
@@ -53,7 +64,15 @@ contract DocumentVerification {
     }
 
     function revokeSign(bytes32 documentHash) external {
-        uint256 signerIndex = _getSignedSignerIndex(documentHash, msg.sender);
+        Document memory document = _documents[documentHash];
+        require(document.verificationDeadline > block.timestamp, "DocumentVerification: deadline is over to revoke");
+        require(
+            _isSignerSignedTheDocument(documentHash, msg.sender),
+            "DocumentVerification: signer did not sign the document yet"
+        );
+
+        Sign[] memory signatures = _signatures[documentHash];
+        uint256 signerIndex = _getSignedSignerIndex(signatures, msg.sender);
 
         console.log("Before pop");
         for (uint256 i = 0; i < _signatures[documentHash].length; i++) {
@@ -74,9 +93,32 @@ contract DocumentVerification {
         }
     }
 
-    function _getSignedSignerIndex(bytes32 documentHash, address signer) private view returns (uint256 index) {
-        Sign[] memory signatures = _signatures[documentHash];
+    function _isSignerRequestedByDocument(bytes32 documentHash, address signer) private view returns (bool requested) {
+        address[] memory requestedSigners = _documents[documentHash].requestedSigners;
+        requested = _getRequestedSignerIndex(requestedSigners, signer) != INVALID_INDEX;
+    }
 
+    function _isSignerSignedTheDocument(bytes32 documentHash, address signer) private view returns (bool signed) {
+        Sign[] memory signatures = _signatures[documentHash];
+        signed = _getSignedSignerIndex(signatures, signer) != INVALID_INDEX;
+    }
+
+    function _getRequestedSignerIndex(address[] memory requestedSigners, address signer)
+        private
+        pure
+        returns (uint256 index)
+    {
+        index = INVALID_INDEX;
+
+        for (uint256 i = 0; i < requestedSigners.length; i++) {
+            if (requestedSigners[i] == signer) {
+                index = i;
+                break;
+            }
+        }
+    }
+
+    function _getSignedSignerIndex(Sign[] memory signatures, address signer) private pure returns (uint256 index) {
         index = INVALID_INDEX;
 
         for (uint256 i = 0; i < signatures.length; i++) {
