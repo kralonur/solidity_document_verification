@@ -93,27 +93,16 @@ contract DocumentVerification {
         }
     }
 
-    function multisigCheck(bytes32 documentHash) external view returns (bool legit) {
+    function isDocumentLegit(bytes32 documentHash) external view returns (bool legit) {
         Document memory document = _documents[documentHash];
-        Sign[] memory signatures = _signatures[documentHash];
 
-        console.log("Signer count: %s", signatures.length);
-        console.log("Requested count: %s", document.requestedSigners.length);
-
-        legit = document.requestedSigners.length == signatures.length;
-    }
-
-    function votingCheck(bytes32 documentHash) external view returns (bool legit) {
-        Document memory document = _documents[documentHash];
-        Sign[] memory signatures = _signatures[documentHash];
-
-        console.log("Signer count: %s", signatures.length);
-        console.log("Requested count: %s", document.requestedSigners.length);
-
-        if (signatures.length > 0) {
-            // should be bigger than 0.5 * 10e18 ==> 5 * 10e17
-            legit = (signatures.length * 10e18) / document.requestedSigners.length > 5 * 10e17;
-        } else legit = false;
+        if (document.verificationType == VerificationType.MULTISIG) {
+            legit = _multisigCheck(documentHash);
+        } else if (document.verificationType == VerificationType.VOTING) {
+            legit = _votingCheck(documentHash);
+        } else {
+            legit = false;
+        }
     }
 
     function _isSignerRequestedByDocument(bytes32 documentHash, address signer) private view returns (bool requested) {
@@ -150,5 +139,28 @@ contract DocumentVerification {
                 break;
             }
         }
+    }
+
+    function _multisigCheck(bytes32 documentHash) private view returns (bool legit) {
+        Document memory document = _documents[documentHash];
+        Sign[] memory signatures = _signatures[documentHash];
+
+        console.log("Signer count: %s", signatures.length);
+        console.log("Requested count: %s", document.requestedSigners.length);
+
+        legit = document.requestedSigners.length == signatures.length;
+    }
+
+    function _votingCheck(bytes32 documentHash) private view returns (bool legit) {
+        Document memory document = _documents[documentHash];
+        Sign[] memory signatures = _signatures[documentHash];
+
+        console.log("Signer count: %s", signatures.length);
+        console.log("Requested count: %s", document.requestedSigners.length);
+
+        if (signatures.length > 0) {
+            // should be bigger than 0.5 * 10e18 ==> 5 * 10e17
+            legit = (signatures.length * 10e18) / document.requestedSigners.length > 5 * 10e17;
+        } else legit = false;
     }
 }
