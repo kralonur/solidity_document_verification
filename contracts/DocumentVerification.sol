@@ -10,6 +10,7 @@ contract DocumentVerification {
     error SignerDidNotSigned();
 
     uint256 public constant INVALID_INDEX = 2**256 - 1;
+    uint256 public constant MIN_VOTER_COUNT = 1;
 
     enum VerificationType {
         INVALID,
@@ -98,14 +99,14 @@ contract DocumentVerification {
         console.log("Signer count: %s", signatures.length);
         console.log("Requested count: %s", document.requestedSigners.length);
 
-        if (signatures.length == 0) legit = false;
-        else if (document.verificationType == VerificationType.MULTISIG) {
-            legit = _multisigCheck(document, signatures);
-        } else if (document.verificationType == VerificationType.VOTING) {
-            legit = _votingCheck(document, signatures);
-        } else {
-            legit = false;
-        }
+        if (signatures.length >= MIN_VOTER_COUNT) {
+            if (document.verificationType == VerificationType.MULTISIG) {
+                legit = _multisigCheck(document, signatures);
+            }
+            if (document.verificationType == VerificationType.VOTING) {
+                legit = _votingCheck(document, signatures);
+            }
+        } else legit = false;
     }
 
     function _isSignerRequestedByDocument(bytes32 documentHash, address signer) private view returns (bool requested) {
@@ -149,9 +150,6 @@ contract DocumentVerification {
     }
 
     function _votingCheck(Document memory document, Sign[] memory signatures) private pure returns (bool legit) {
-        if (signatures.length > 0) {
-            // should be bigger than 0.5 * 10e18 ==> 5 * 10e17
-            legit = (signatures.length * 10e18) / document.requestedSigners.length > 5 * 10e17;
-        } else legit = false;
+        legit = (signatures.length * 10e18) / document.requestedSigners.length > 5 * 10e17;
     }
 }
