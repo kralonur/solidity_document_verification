@@ -5,16 +5,23 @@ import "./Controller.sol";
 import "./IDocumentVerificationManagement.sol";
 
 contract Management is Controller {
-    function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external {
+    error DocumentCreatorNotFound();
+    error DecrementAmountExceedsAllowance();
+
+    function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external onlyController {
         //TODO: get address from controller
         IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(address(0));
 
         managementInterface.configureDocumentCreator(documentCreator, allowedAmount);
     }
 
-    function increaseDocumentCreatorAllowance(address documentCreator, uint256 incrementAmount) external {
+    function increaseDocumentCreatorAllowance(address documentCreator, uint256 incrementAmount)
+        external
+        onlyController
+    {
         //TODO: get address from controller
         IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(address(0));
+        if (!managementInterface.isDocumentCreator(documentCreator)) revert DocumentCreatorNotFound();
 
         uint256 currentAllowance = managementInterface.documentCreatorAllowance(documentCreator);
         uint256 newAllowance = currentAllowance + incrementAmount;
@@ -22,11 +29,17 @@ contract Management is Controller {
         managementInterface.configureDocumentCreator(documentCreator, newAllowance);
     }
 
-    function decreaseDocumentCreatorAllowance(address documentCreator, uint256 decrementAmount) external {
+    function decreaseDocumentCreatorAllowance(address documentCreator, uint256 decrementAmount)
+        external
+        onlyController
+    {
         //TODO: get address from controller
         IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(address(0));
+        if (!managementInterface.isDocumentCreator(documentCreator)) revert DocumentCreatorNotFound();
 
         uint256 currentAllowance = managementInterface.documentCreatorAllowance(documentCreator);
+        if (decrementAmount > currentAllowance) revert DecrementAmountExceedsAllowance();
+
         uint256 newAllowance = currentAllowance - decrementAmount;
 
         managementInterface.configureDocumentCreator(documentCreator, newAllowance);
