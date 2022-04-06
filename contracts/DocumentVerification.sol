@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
+import "./IDocumentVerificationManagement.sol";
 import "hardhat/console.sol";
 
-contract DocumentVerification {
+contract DocumentVerification is IDocumentVerificationManagement {
     error LateToExecute(uint256 executeTime);
     error SignerIsNotRequested();
     error SignerAlreadySigned();
@@ -34,6 +35,9 @@ contract DocumentVerification {
 
     mapping(bytes32 => Document) private _documents;
     mapping(bytes32 => Sign[]) private _signatures;
+
+    mapping(address => bool) private _documentCreators;
+    mapping(address => uint256) private _documentCreatorAllowed;
 
     modifier validDocument(bytes32 documentHash) {
         if (_documents[documentHash].verificationCreatedAt == 0) revert InvalidDocument();
@@ -98,6 +102,16 @@ contract DocumentVerification {
         }
     }
 
+    function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external override {
+        if (!_documentCreators[documentCreator]) _documentCreators[documentCreator] = true;
+        _documentCreatorAllowed[documentCreator] = allowedAmount;
+    }
+
+    function removeDocumentCreator(address documentCreator) external override {
+        if (_documentCreators[documentCreator]) _documentCreators[documentCreator] = false;
+        _documentCreatorAllowed[documentCreator] = 0;
+    }
+
     function isDocumentLegit(bytes32 documentHash) external view returns (bool legit) {
         Document memory document = _documents[documentHash];
         Sign[] memory signatures = _signatures[documentHash];
@@ -113,6 +127,14 @@ contract DocumentVerification {
                 legit = _votingCheck(document, signatures);
             }
         } else legit = false;
+    }
+
+    function documentCreatorAllowance(address documentCreator) external view override returns (uint256 allowance) {
+        allowance = _documentCreatorAllowed[documentCreator];
+    }
+
+    function isDocumentCreator(address documentCreator) external view override returns (bool result) {
+        result = _documentCreators[documentCreator];
     }
 
     function _isSignerRequestedByDocument(bytes32 documentHash, address signer) private view returns (bool requested) {
