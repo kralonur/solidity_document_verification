@@ -4,6 +4,11 @@ pragma solidity ^0.8.6;
 import "hardhat/console.sol";
 
 contract DocumentVerification {
+    error LateToExecute(uint256 executeTime);
+    error SignerIsNotRequested();
+    error SignerAlreadySigned();
+    error SignerDidNotSigned();
+
     uint256 public constant INVALID_INDEX = 2**256 - 1;
 
     enum VerificationType {
@@ -46,15 +51,10 @@ contract DocumentVerification {
 
     function signDocument(bytes32 documentHash) external {
         Document memory document = _documents[documentHash];
-        require(document.verificationDeadline > block.timestamp, "DocumentVerification: deadline is over to sign");
-        require(
-            _isSignerRequestedByDocument(documentHash, msg.sender),
-            "DocumentVerification: signer is not requested by document"
-        );
-        require(
-            !_isSignerSignedTheDocument(documentHash, msg.sender),
-            "DocumentVerification: signer already signed the document"
-        );
+        if (block.timestamp > document.verificationDeadline)
+            revert LateToExecute({ executeTime: document.verificationDeadline });
+        if (!_isSignerRequestedByDocument(documentHash, msg.sender)) revert SignerIsNotRequested();
+        if (_isSignerSignedTheDocument(documentHash, msg.sender)) revert SignerAlreadySigned();
 
         // add signature to document
         Sign memory sign = Sign({ signer: msg.sender, timestamp: block.timestamp });
@@ -65,11 +65,9 @@ contract DocumentVerification {
 
     function revokeSign(bytes32 documentHash) external {
         Document memory document = _documents[documentHash];
-        require(document.verificationDeadline > block.timestamp, "DocumentVerification: deadline is over to revoke");
-        require(
-            _isSignerSignedTheDocument(documentHash, msg.sender),
-            "DocumentVerification: signer did not sign the document yet"
-        );
+        if (block.timestamp > document.verificationDeadline)
+            revert LateToExecute({ executeTime: document.verificationDeadline });
+        if (!_isSignerSignedTheDocument(documentHash, msg.sender)) revert SignerDidNotSigned();
 
         Sign[] memory signatures = _signatures[documentHash];
         uint256 signerIndex = _getSignedSignerIndex(signatures, msg.sender);
