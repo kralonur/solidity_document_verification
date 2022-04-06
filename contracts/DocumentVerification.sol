@@ -10,6 +10,7 @@ contract DocumentVerification is IDocumentVerificationManagement {
     error SignerAlreadySigned();
     error SignerDidNotSigned();
     error InvalidDocument();
+    error CallerIsNotManagement();
 
     uint256 public constant INVALID_INDEX = 2**256 - 1;
     uint256 public constant MIN_VOTER_COUNT = 1;
@@ -38,6 +39,17 @@ contract DocumentVerification is IDocumentVerificationManagement {
 
     mapping(address => bool) private _documentCreators;
     mapping(address => uint256) private _documentCreatorAllowed;
+
+    address public immutable management;
+
+    constructor(address _management) {
+        management = _management;
+    }
+
+    modifier onlyManagement() {
+        if (msg.sender != management) revert CallerIsNotManagement();
+        _;
+    }
 
     modifier validDocument(bytes32 documentHash) {
         if (_documents[documentHash].verificationCreatedAt == 0) revert InvalidDocument();
@@ -88,7 +100,7 @@ contract DocumentVerification is IDocumentVerificationManagement {
             console.log(_signatures[documentHash][i].signer);
         }
 
-        // assign latest sign to slot which is going to be delated
+        // assign latest sign to slot which is going to be deleted
         uint256 latestItemIndex = _signatures[documentHash].length - 1;
         _signatures[documentHash][signerIndex] = _signatures[documentHash][latestItemIndex];
 
@@ -102,12 +114,12 @@ contract DocumentVerification is IDocumentVerificationManagement {
         }
     }
 
-    function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external override {
+    function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external override onlyManagement {
         if (!_documentCreators[documentCreator]) _documentCreators[documentCreator] = true;
         _documentCreatorAllowed[documentCreator] = allowedAmount;
     }
 
-    function removeDocumentCreator(address documentCreator) external override {
+    function removeDocumentCreator(address documentCreator) external override onlyManagement {
         if (_documentCreators[documentCreator]) _documentCreators[documentCreator] = false;
         _documentCreatorAllowed[documentCreator] = 0;
     }
