@@ -93,6 +93,16 @@ contract DocumentVerification {
         }
     }
 
+    function multisigCheck(bytes32 documentHash) external view returns (bool legit) {
+        Document memory document = _documents[documentHash];
+        Sign[] memory signatures = _signatures[documentHash];
+
+        console.log("Signer count: %s", signatures.length);
+        console.log("Requested count: %s", document.requestedSigners.length);
+
+        legit = document.requestedSigners.length == signatures.length;
+    }
+
     function _isSignerRequestedByDocument(bytes32 documentHash, address signer) private view returns (bool requested) {
         address[] memory requestedSigners = _documents[documentHash].requestedSigners;
         requested = _getRequestedSignerIndex(requestedSigners, signer) != INVALID_INDEX;
