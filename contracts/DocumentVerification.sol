@@ -103,6 +103,19 @@ contract DocumentVerification {
         legit = document.requestedSigners.length == signatures.length;
     }
 
+    function votingCheck(bytes32 documentHash) external view returns (bool legit) {
+        Document memory document = _documents[documentHash];
+        Sign[] memory signatures = _signatures[documentHash];
+
+        console.log("Signer count: %s", signatures.length);
+        console.log("Requested count: %s", document.requestedSigners.length);
+
+        if (signatures.length > 0) {
+            // should be bigger than 0.5 * 10e18 ==> 5 * 10e17
+            legit = (signatures.length * 10e18) / document.requestedSigners.length > 5 * 10e17;
+        } else legit = false;
+    }
+
     function _isSignerRequestedByDocument(bytes32 documentHash, address signer) private view returns (bool requested) {
         address[] memory requestedSigners = _documents[documentHash].requestedSigners;
         requested = _getRequestedSignerIndex(requestedSigners, signer) != INVALID_INDEX;
