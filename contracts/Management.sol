@@ -9,32 +9,34 @@ contract Management is Controller {
     error DecrementAmountExceedsAllowance();
 
     function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external onlyController {
-        //TODO: get address from controller
-        IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(address(0));
+        address managementAddress = getDocumentVerificationManagement(msg.sender);
+        IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(managementAddress);
 
-        managementInterface.configureDocumentCreator(documentCreator, allowedAmount);
+        _configureDocumentCreator(managementInterface, documentCreator, allowedAmount);
     }
 
     function increaseDocumentCreatorAllowance(address documentCreator, uint256 incrementAmount)
         external
         onlyController
     {
-        //TODO: get address from controller
-        IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(address(0));
+        address managementAddress = getDocumentVerificationManagement(msg.sender);
+        IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(managementAddress);
+
         if (!managementInterface.isDocumentCreator(documentCreator)) revert DocumentCreatorNotFound();
 
         uint256 currentAllowance = managementInterface.documentCreatorAllowance(documentCreator);
         uint256 newAllowance = currentAllowance + incrementAmount;
 
-        managementInterface.configureDocumentCreator(documentCreator, newAllowance);
+        _configureDocumentCreator(managementInterface, documentCreator, newAllowance);
     }
 
     function decreaseDocumentCreatorAllowance(address documentCreator, uint256 decrementAmount)
         external
         onlyController
     {
-        //TODO: get address from controller
-        IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(address(0));
+        address managementAddress = getDocumentVerificationManagement(msg.sender);
+        IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(managementAddress);
+
         if (!managementInterface.isDocumentCreator(documentCreator)) revert DocumentCreatorNotFound();
 
         uint256 currentAllowance = managementInterface.documentCreatorAllowance(documentCreator);
@@ -42,6 +44,14 @@ contract Management is Controller {
 
         uint256 newAllowance = currentAllowance - decrementAmount;
 
-        managementInterface.configureDocumentCreator(documentCreator, newAllowance);
+        _configureDocumentCreator(managementInterface, documentCreator, newAllowance);
+    }
+
+    function _configureDocumentCreator(
+        IDocumentVerificationManagement managementInterface,
+        address documentCreator,
+        uint256 allowedAmount
+    ) private {
+        managementInterface.configureDocumentCreator(documentCreator, allowedAmount);
     }
 }
