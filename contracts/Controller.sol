@@ -1,14 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
-contract Controller {
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract Controller is Ownable {
+    error CallerIsNotController();
+
     mapping(address => address) private _controllers;
 
-    function configureController(address controller, address documentVerificationManagement) external {
+    modifier onlyController() {
+        if (_controllers[msg.sender] == address(0)) revert CallerIsNotController();
+        _;
+    }
+
+    function configureController(address controller, address documentVerificationManagement) external onlyOwner {
         _controllers[controller] = documentVerificationManagement;
     }
 
-    function removeController(address controller) external {
+    function removeController(address controller) external onlyOwner {
         _controllers[controller] = address(0);
     }
 
