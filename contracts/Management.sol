@@ -15,6 +15,13 @@ contract Management is Controller {
         _configureDocumentCreator(managementInterface, documentCreator, allowedAmount);
     }
 
+    function removeDocumentCreator(address documentCreator) external onlyController {
+        address managementAddress = getDocumentVerificationManagement(msg.sender);
+        IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(managementAddress);
+
+        managementInterface.removeDocumentCreator(documentCreator);
+    }
+
     function increaseDocumentCreatorAllowance(address documentCreator, uint256 incrementAmount)
         external
         onlyController
