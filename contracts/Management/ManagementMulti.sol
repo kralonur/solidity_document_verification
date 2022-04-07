@@ -2,18 +2,18 @@
 pragma solidity ^0.8.6;
 
 import "./Controller.sol";
-import "./IDocumentVerificationManagement.sol";
+import "../IDocumentVerificationManagement.sol";
 import "./IManagement.sol";
 
-contract Management is Controller, IManagement {
-    function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external onlyController {
+contract ManagementMulti is IManagement, Controller {
+    function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external override onlyController {
         address managementAddress = getDocumentVerificationManagement(msg.sender);
         IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(managementAddress);
 
         _configureDocumentCreator(managementInterface, documentCreator, allowedAmount);
     }
 
-    function removeDocumentCreator(address documentCreator) external onlyController {
+    function removeDocumentCreator(address documentCreator) external override onlyController {
         address managementAddress = getDocumentVerificationManagement(msg.sender);
         IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(managementAddress);
 
@@ -22,6 +22,7 @@ contract Management is Controller, IManagement {
 
     function increaseDocumentCreatorAllowance(address documentCreator, uint256 incrementAmount)
         external
+        override
         onlyController
     {
         address managementAddress = getDocumentVerificationManagement(msg.sender);
@@ -37,6 +38,7 @@ contract Management is Controller, IManagement {
 
     function decreaseDocumentCreatorAllowance(address documentCreator, uint256 decrementAmount)
         external
+        override
         onlyController
     {
         address managementAddress = getDocumentVerificationManagement(msg.sender);
