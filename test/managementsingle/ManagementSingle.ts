@@ -68,5 +68,30 @@ describe("ManagementSingle tests", function () {
         expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(allowedAmount);
       });
     });
+
+    describe("Remove document creator check", function () {
+      it("Should not remove document creator, if not owner", async function () {
+        await expect(
+          this.managementSingle.connect(this.signers.user1).removeDocumentCreator(ethers.constants.AddressZero),
+        ).to.revertedWith("Ownable: caller is not the owner");
+      });
+
+      it("Should remove document creator", async function () {
+        const documentCreator = this.signers.user1.address;
+
+        expect(await this.documentVerification.isDocumentCreator(documentCreator)).equal(true);
+
+        await this.managementSingle.removeDocumentCreator(documentCreator);
+
+        expect(await this.documentVerification.isDocumentCreator(documentCreator)).equal(false);
+      });
+
+      it("Should give correct values after remove document creator", async function () {
+        const documentCreator = this.signers.user1.address;
+        const allowedAmount = 0;
+
+        expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(allowedAmount);
+      });
+    });
   });
 });
