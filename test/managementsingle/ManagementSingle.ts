@@ -93,5 +93,36 @@ describe("ManagementSingle tests", function () {
         expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(allowedAmount);
       });
     });
+
+    describe("Increase document creator allowance check", function () {
+      it("Should not increase document creator allowance, if not owner", async function () {
+        await expect(
+          this.managementSingle
+            .connect(this.signers.user1)
+            .increaseDocumentCreatorAllowance(ethers.constants.AddressZero, 1),
+        ).to.revertedWith("Ownable: caller is not the owner");
+      });
+
+      it("Should not increase document creator allowance, if document creator not found", async function () {
+        await expect(
+          this.managementSingle.increaseDocumentCreatorAllowance(ethers.constants.AddressZero, 1),
+        ).to.revertedWith("DocumentCreatorNotFound()");
+      });
+
+      it("Should increase document creator allowance", async function () {
+        const documentCreator = this.signers.user1.address;
+        const initialAllowedAmount = 3;
+        const increaseAmount = 2;
+        const increasedAllowedAmount = initialAllowedAmount + increaseAmount;
+        // first configure document creator in order to increase
+        await this.managementSingle.configureDocumentCreator(documentCreator, initialAllowedAmount);
+
+        expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(initialAllowedAmount);
+
+        await this.managementSingle.increaseDocumentCreatorAllowance(documentCreator, increaseAmount);
+
+        expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(increasedAllowedAmount);
+      });
+    });
   });
 });
