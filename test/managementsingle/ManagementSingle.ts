@@ -106,7 +106,7 @@ describe("ManagementSingle tests", function () {
       it("Should not increase document creator allowance, if document creator not found", async function () {
         await expect(
           this.managementSingle.increaseDocumentCreatorAllowance(ethers.constants.AddressZero, 1),
-        ).to.revertedWith("DocumentCreatorNotFound()");
+        ).to.revertedWith(utils.errorDocumentCreatorNotFound());
       });
 
       it("Should increase document creator allowance", async function () {
@@ -137,7 +137,7 @@ describe("ManagementSingle tests", function () {
       it("Should not decrease document creator allowance, if document creator not found", async function () {
         await expect(
           this.managementSingle.decreaseDocumentCreatorAllowance(ethers.constants.AddressZero, 1),
-        ).to.revertedWith("DocumentCreatorNotFound()");
+        ).to.revertedWith(utils.errorDocumentCreatorNotFound());
       });
 
       it("Should not decrease document creator allowance, if decrement amount exceeds current allowance", async function () {
@@ -149,7 +149,7 @@ describe("ManagementSingle tests", function () {
 
         await expect(
           this.managementSingle.decreaseDocumentCreatorAllowance(documentCreator, decreaseAmount),
-        ).to.revertedWith("DecrementAmountExceedsAllowance()");
+        ).to.revertedWith(utils.errorDecrementAmountExceedsAllowance());
       });
 
       it("Should decrease document creator allowance", async function () {

@@ -28,3 +28,15 @@ function getDocumentVerificationContractArgsArray(management: string) {
 }
 
 export { getManagementSingleContract, getDocumentVerificationContract, getDocumentVerificationContractArgs };
+
+// ERRORS
+
+function errorDocumentCreatorNotFound(): string {
+  return `DocumentCreatorNotFound()`;
+}
+
+function errorDecrementAmountExceedsAllowance(): string {
+  return `DecrementAmountExceedsAllowance()`;
+}
+
+export { errorDocumentCreatorNotFound, errorDecrementAmountExceedsAllowance };
