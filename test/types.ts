@@ -1,8 +1,10 @@
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import type { Fixture } from "ethereum-waffle";
-
+import { DocumentVerification, ManagementSingle } from "../src/types";
 declare module "mocha" {
   export interface Context {
+    managementSingle: ManagementSingle;
+    documentVerification: DocumentVerification;
     loadFixture: <T>(fixture: Fixture<T>) => Promise<T>;
     signers: Signers;
   }
@@ -10,4 +12,5 @@ declare module "mocha" {
 
 export interface Signers {
   admin: SignerWithAddress;
+  user1: SignerWithAddress;
 }
