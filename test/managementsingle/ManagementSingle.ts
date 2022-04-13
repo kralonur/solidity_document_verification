@@ -124,5 +124,44 @@ describe("ManagementSingle tests", function () {
         expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(increasedAllowedAmount);
       });
     });
+
+    describe("Decrease document creator allowance check", function () {
+      it("Should not decrease document creator allowance, if not owner", async function () {
+        await expect(
+          this.managementSingle
+            .connect(this.signers.user1)
+            .decreaseDocumentCreatorAllowance(ethers.constants.AddressZero, 1),
+        ).to.revertedWith("Ownable: caller is not the owner");
+      });
+
+      it("Should not decrease document creator allowance, if document creator not found", async function () {
+        await expect(
+          this.managementSingle.decreaseDocumentCreatorAllowance(ethers.constants.AddressZero, 1),
+        ).to.revertedWith("DocumentCreatorNotFound()");
+      });
+
+      it("Should not decrease document creator allowance, if decrement amount exceeds current allowance", async function () {
+        const documentCreator = this.signers.user1.address;
+        const initialAllowedAmount = 3;
+        const decreaseAmount = initialAllowedAmount + 1;
+        // first configure document creator in order to decrease
+        await this.managementSingle.configureDocumentCreator(documentCreator, initialAllowedAmount);
+
+        await expect(
+          this.managementSingle.decreaseDocumentCreatorAllowance(documentCreator, decreaseAmount),
+        ).to.revertedWith("DecrementAmountExceedsAllowance()");
+      });
+
+      it("Should decrease document creator allowance", async function () {
+        const documentCreator = this.signers.user1.address;
+        const initialAllowedAmount = await this.documentVerification.documentCreatorAllowance(documentCreator);
+        const decreaseAmount = 2;
+        const decreasedAllowedAmount = initialAllowedAmount.sub(decreaseAmount);
+
+        await this.managementSingle.decreaseDocumentCreatorAllowance(documentCreator, decreaseAmount);
+
+        expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(decreasedAllowedAmount);
+      });
+    });
   });
 });
