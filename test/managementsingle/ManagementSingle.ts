@@ -33,4 +33,40 @@ describe("ManagementSingle tests", function () {
       expect(await this.managementSingle.managementInterface()).equal(this.documentVerification.address);
     });
   });
+
+  describe("Document creator check", function () {
+    before(async function () {
+      this.managementSingle = await utils.getManagementSingleContract(this.signers);
+
+      const args = utils.getDocumentVerificationContractArgs(this.managementSingle.address);
+      this.documentVerification = await utils.getDocumentVerificationContract(this.signers, args);
+      await this.managementSingle.setDocumentManagementInterface(this.documentVerification.address);
+    });
+
+    describe("Configure document creator check", function () {
+      it("Should not configure document creator, if not owner", async function () {
+        await expect(
+          this.managementSingle.connect(this.signers.user1).configureDocumentCreator(ethers.constants.AddressZero, 100),
+        ).to.revertedWith("Ownable: caller is not the owner");
+      });
+
+      it("Should configure document creator", async function () {
+        const documentCreator = this.signers.user1.address;
+        const allowedAmount = 3;
+
+        expect(await this.documentVerification.isDocumentCreator(documentCreator)).equal(false);
+
+        await this.managementSingle.configureDocumentCreator(documentCreator, allowedAmount);
+
+        expect(await this.documentVerification.isDocumentCreator(documentCreator)).equal(true);
+      });
+
+      it("Should give correct values after configure document creator", async function () {
+        const documentCreator = this.signers.user1.address;
+        const allowedAmount = 3;
+
+        expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(allowedAmount);
+      });
+    });
+  });
 });
