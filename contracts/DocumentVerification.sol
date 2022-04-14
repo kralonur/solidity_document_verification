@@ -11,6 +11,7 @@ contract DocumentVerification is IDocumentVerificationManagement {
     error SignerDidNotSigned();
     error InvalidDocument();
     error CallerIsNotManagement();
+    error CallerIsNotDocumentCreator();
 
     uint256 public constant INVALID_INDEX = 2**256 - 1;
     uint256 public constant MIN_VOTER_COUNT = 1;
@@ -46,6 +47,11 @@ contract DocumentVerification is IDocumentVerificationManagement {
         management = _management;
     }
 
+    modifier onlyDocumentCreator() {
+        if (msg.sender != management) revert CallerIsNotDocumentCreator();
+        _;
+    }
+
     modifier onlyManagement() {
         if (msg.sender != management) revert CallerIsNotManagement();
         _;
@@ -62,7 +68,7 @@ contract DocumentVerification is IDocumentVerificationManagement {
         uint128 documentDeadline,
         VerificationType verificationType,
         address[] calldata requestedSigners
-    ) external {
+    ) external onlyDocumentCreator {
         Document storage document = _documents[documentHash];
 
         document.verificationCreatedAt = uint128(block.timestamp);
