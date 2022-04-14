@@ -12,6 +12,7 @@ contract DocumentVerification is IDocumentVerificationManagement {
     error InvalidDocument();
     error CallerIsNotManagement();
     error CallerIsNotDocumentCreator();
+    error DocumentCreatorAllowanceNotEnough();
 
     uint256 public constant INVALID_INDEX = 2**256 - 1;
     uint256 public constant MIN_VOTER_COUNT = 1;
@@ -39,7 +40,7 @@ contract DocumentVerification is IDocumentVerificationManagement {
     mapping(bytes32 => Sign[]) private _signatures;
 
     mapping(address => bool) private _documentCreators;
-    mapping(address => uint256) private _documentCreatorAllowed;
+    mapping(address => uint256) private _documentCreatorAllowance;
 
     address public immutable management;
 
@@ -48,7 +49,7 @@ contract DocumentVerification is IDocumentVerificationManagement {
     }
 
     modifier onlyDocumentCreator() {
-        if (msg.sender != management) revert CallerIsNotDocumentCreator();
+        if (!_documentCreators[msg.sender]) revert CallerIsNotDocumentCreator();
         _;
     }
 
@@ -69,6 +70,8 @@ contract DocumentVerification is IDocumentVerificationManagement {
         VerificationType verificationType,
         address[] calldata requestedSigners
     ) external onlyDocumentCreator {
+        if (_documentCreatorAllowance[msg.sender] == 0) revert DocumentCreatorAllowanceNotEnough();
+
         Document storage document = _documents[documentHash];
 
         document.verificationCreatedAt = uint128(block.timestamp);
@@ -76,6 +79,8 @@ contract DocumentVerification is IDocumentVerificationManagement {
         document.documentDeadline = documentDeadline;
         document.verificationType = verificationType;
         document.requestedSigners = requestedSigners;
+
+        _documentCreatorAllowance[msg.sender]--;
     }
 
     function signDocument(bytes32 documentHash) external validDocument(documentHash) {
@@ -122,12 +127,12 @@ contract DocumentVerification is IDocumentVerificationManagement {
 
     function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external override onlyManagement {
         if (!_documentCreators[documentCreator]) _documentCreators[documentCreator] = true;
-        _documentCreatorAllowed[documentCreator] = allowedAmount;
+        _documentCreatorAllowance[documentCreator] = allowedAmount;
     }
 
     function removeDocumentCreator(address documentCreator) external override onlyManagement {
         if (_documentCreators[documentCreator]) _documentCreators[documentCreator] = false;
-        _documentCreatorAllowed[documentCreator] = 0;
+        _documentCreatorAllowance[documentCreator] = 0;
     }
 
     function isDocumentLegit(bytes32 documentHash) external view returns (bool legit) {
@@ -148,7 +153,7 @@ contract DocumentVerification is IDocumentVerificationManagement {
     }
 
     function documentCreatorAllowance(address documentCreator) external view override returns (uint256 allowance) {
-        allowance = _documentCreatorAllowed[documentCreator];
+        allowance = _documentCreatorAllowance[documentCreator];
     }
 
     function isDocumentCreator(address documentCreator) external view override returns (bool result) {
