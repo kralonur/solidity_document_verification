@@ -39,5 +39,23 @@ describe("ManagementMulti tests", function () {
         );
       });
     });
+
+    describe("Remove controller check", function () {
+      it("Should not remove controller, if not owner", async function () {
+        await expect(
+          this.managementMulti.connect(this.signers.user1).removeController(ethers.constants.AddressZero),
+        ).to.revertedWith("Ownable: caller is not the owner");
+      });
+
+      it("Should remove controller", async function () {
+        const controller = this.signers.user1.address;
+
+        await this.managementMulti.removeController(controller);
+
+        expect(await this.managementMulti.getDocumentVerificationManagement(controller)).equal(
+          ethers.constants.AddressZero,
+        );
+      });
+    });
   });
 });
