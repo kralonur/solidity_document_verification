@@ -1,10 +1,18 @@
-import { DocumentVerification__factory, ManagementSingle__factory } from "../src/types";
+import { DocumentVerification__factory, ManagementMulti__factory, ManagementSingle__factory } from "../src/types";
 import { Signers } from "./types";
 
 // CONTRACTS
 
 async function getManagementSingleContract(signers: Signers) {
   const factory = new ManagementSingle__factory(signers.admin);
+  const contract = await factory.deploy();
+  await contract.deployed();
+
+  return contract;
+}
+
+async function getManagementMultiContract(signers: Signers) {
+  const factory = new ManagementMulti__factory(signers.admin);
   const contract = await factory.deploy();
   await contract.deployed();
 
@@ -27,7 +35,12 @@ function getDocumentVerificationContractArgsArray(management: string) {
   return [management];
 }
 
-export { getManagementSingleContract, getDocumentVerificationContract, getDocumentVerificationContractArgs };
+export {
+  getManagementSingleContract,
+  getManagementMultiContract,
+  getDocumentVerificationContract,
+  getDocumentVerificationContractArgs,
+};
 
 // ERRORS
 
