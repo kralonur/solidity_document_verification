@@ -11,6 +11,7 @@ describe("ManagementMulti tests", function () {
     const signers: SignerWithAddress[] = await ethers.getSigners();
     this.signers.admin = signers[0];
     this.signers.user1 = signers[1];
+    this.signers.user2 = signers[2];
   });
 
   describe("Controller check", function () {
@@ -55,6 +56,45 @@ describe("ManagementMulti tests", function () {
         expect(await this.managementMulti.getDocumentVerificationManagement(controller)).equal(
           ethers.constants.AddressZero,
         );
+      });
+    });
+  });
+
+  describe("Document creator check", function () {
+    before(async function () {
+      this.managementMulti = await utils.getManagementMultiContract(this.signers);
+
+      const args = utils.getDocumentVerificationContractArgs(this.managementMulti.address);
+      this.documentVerification = await utils.getDocumentVerificationContract(this.signers, args);
+    });
+
+    describe("Configure document creator check", function () {
+      it("Should not configure document creator, if not owner", async function () {
+        await expect(
+          this.managementMulti.connect(this.signers.user1).configureDocumentCreator(ethers.constants.AddressZero, 100),
+        ).to.revertedWith(utils.errorCallerIsNotController());
+      });
+
+      it("Should configure document creator", async function () {
+        // configure user1 as controller
+        const controller = this.signers.user1;
+        await this.managementMulti.configureController(controller.address, this.documentVerification.address);
+
+        const documentCreator = this.signers.user2.address;
+        const allowedAmount = 3;
+
+        expect(await this.documentVerification.isDocumentCreator(documentCreator)).equal(false);
+
+        await this.managementMulti.connect(controller).configureDocumentCreator(documentCreator, allowedAmount);
+
+        expect(await this.documentVerification.isDocumentCreator(documentCreator)).equal(true);
+      });
+
+      it("Should give correct values after configure document creator", async function () {
+        const documentCreator = this.signers.user2.address;
+        const allowedAmount = 3;
+
+        expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(allowedAmount);
       });
     });
   });

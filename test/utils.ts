@@ -52,4 +52,8 @@ function errorDecrementAmountExceedsAllowance(): string {
   return `DecrementAmountExceedsAllowance()`;
 }
 
-export { errorDocumentCreatorNotFound, errorDecrementAmountExceedsAllowance };
+function errorCallerIsNotController(): string {
+  return `CallerIsNotController()`;
+}
+
+export { errorDocumentCreatorNotFound, errorDecrementAmountExceedsAllowance, errorCallerIsNotController };
