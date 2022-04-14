@@ -159,5 +159,50 @@ describe("ManagementMulti tests", function () {
         expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(increasedAllowedAmount);
       });
     });
+
+    describe("Decrease document creator allowance check", function () {
+      it("Should not decrease document creator allowance, if not controller", async function () {
+        await expect(
+          this.managementMulti
+            .connect(this.signers.user2)
+            .decreaseDocumentCreatorAllowance(ethers.constants.AddressZero, 1),
+        ).to.revertedWith(utils.errorCallerIsNotController());
+      });
+
+      it("Should not decrease document creator allowance, if document creator not found", async function () {
+        const controller = this.signers.user1;
+
+        await expect(
+          this.managementMulti.connect(controller).decreaseDocumentCreatorAllowance(ethers.constants.AddressZero, 1),
+        ).to.revertedWith(utils.errorDocumentCreatorNotFound());
+      });
+
+      it("Should not decrease document creator allowance, if decrement amount exceeds current allowance", async function () {
+        const controller = this.signers.user1;
+        const documentCreator = this.signers.user2.address;
+        const initialAllowedAmount = 3;
+        const decreaseAmount = initialAllowedAmount + 1;
+        // first configure document creator in order to decrease
+        await this.managementMulti.connect(controller).configureDocumentCreator(documentCreator, initialAllowedAmount);
+
+        await expect(
+          this.managementMulti.connect(controller).decreaseDocumentCreatorAllowance(documentCreator, decreaseAmount),
+        ).to.revertedWith(utils.errorDecrementAmountExceedsAllowance());
+      });
+
+      it("Should decrease document creator allowance", async function () {
+        const controller = this.signers.user1;
+        const documentCreator = this.signers.user2.address;
+        const initialAllowedAmount = await this.documentVerification.documentCreatorAllowance(documentCreator);
+        const decreaseAmount = 2;
+        const decreasedAllowedAmount = initialAllowedAmount.sub(decreaseAmount);
+
+        await this.managementMulti
+          .connect(controller)
+          .decreaseDocumentCreatorAllowance(documentCreator, decreaseAmount);
+
+        expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(decreasedAllowedAmount);
+      });
+    });
   });
 });
