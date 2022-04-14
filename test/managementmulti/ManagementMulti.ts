@@ -123,5 +123,41 @@ describe("ManagementMulti tests", function () {
         expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(allowedAmount);
       });
     });
+
+    describe("Increase document creator allowance check", function () {
+      it("Should not increase document creator allowance, if not controller", async function () {
+        await expect(
+          this.managementMulti
+            .connect(this.signers.user2)
+            .increaseDocumentCreatorAllowance(ethers.constants.AddressZero, 1),
+        ).to.revertedWith(utils.errorCallerIsNotController());
+      });
+
+      it("Should not increase document creator allowance, if document creator not found", async function () {
+        const controller = this.signers.user1;
+
+        await expect(
+          this.managementMulti.connect(controller).increaseDocumentCreatorAllowance(ethers.constants.AddressZero, 1),
+        ).to.revertedWith(utils.errorDocumentCreatorNotFound());
+      });
+
+      it("Should increase document creator allowance", async function () {
+        const controller = this.signers.user1;
+        const documentCreator = this.signers.user2.address;
+        const initialAllowedAmount = 3;
+        const increaseAmount = 2;
+        const increasedAllowedAmount = initialAllowedAmount + increaseAmount;
+        // first configure document creator in order to increase
+        await this.managementMulti.connect(controller).configureDocumentCreator(documentCreator, initialAllowedAmount);
+
+        expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(initialAllowedAmount);
+
+        await this.managementMulti
+          .connect(controller)
+          .increaseDocumentCreatorAllowance(documentCreator, increaseAmount);
+
+        expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(increasedAllowedAmount);
+      });
+    });
   });
 });
