@@ -69,7 +69,7 @@ describe("ManagementMulti tests", function () {
     });
 
     describe("Configure document creator check", function () {
-      it("Should not configure document creator, if not owner", async function () {
+      it("Should not configure document creator, if not controller", async function () {
         await expect(
           this.managementMulti.connect(this.signers.user1).configureDocumentCreator(ethers.constants.AddressZero, 100),
         ).to.revertedWith(utils.errorCallerIsNotController());
@@ -93,6 +93,32 @@ describe("ManagementMulti tests", function () {
       it("Should give correct values after configure document creator", async function () {
         const documentCreator = this.signers.user2.address;
         const allowedAmount = 3;
+
+        expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(allowedAmount);
+      });
+    });
+
+    describe("Remove document creator check", function () {
+      it("Should not remove document creator, if not controller", async function () {
+        await expect(
+          this.managementMulti.connect(this.signers.user2).removeDocumentCreator(ethers.constants.AddressZero),
+        ).to.revertedWith(utils.errorCallerIsNotController());
+      });
+
+      it("Should remove document creator", async function () {
+        const controller = this.signers.user1;
+        const documentCreator = this.signers.user2.address;
+
+        expect(await this.documentVerification.isDocumentCreator(documentCreator)).equal(true);
+
+        await this.managementMulti.connect(controller).removeDocumentCreator(documentCreator);
+
+        expect(await this.documentVerification.isDocumentCreator(documentCreator)).equal(false);
+      });
+
+      it("Should give correct values after remove document creator", async function () {
+        const documentCreator = this.signers.user2.address;
+        const allowedAmount = 0;
 
         expect(await this.documentVerification.documentCreatorAllowance(documentCreator)).equal(allowedAmount);
       });
