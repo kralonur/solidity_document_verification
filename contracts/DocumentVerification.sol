@@ -2,9 +2,12 @@
 pragma solidity ^0.8.6;
 
 import "./IDocumentVerificationManagement.sol";
+import "./SignatureSet.sol";
 import "hardhat/console.sol";
 
 contract DocumentVerification is IDocumentVerificationManagement {
+    using SignatureSet for SignatureSet.SignSet;
+
     error LateToExecute(uint256 executeTime);
     error SignerIsNotRequested();
     error SignerAlreadySigned();
@@ -31,13 +34,8 @@ contract DocumentVerification is IDocumentVerificationManagement {
         address[] requestedSigners;
     }
 
-    struct Sign {
-        address signer;
-        uint256 timestamp;
-    }
-
     mapping(bytes32 => Document) private _documents;
-    mapping(bytes32 => Sign[]) private _signatures;
+    mapping(bytes32 => SignatureSet.SignSet) private _signatures;
 
     mapping(address => bool) private _documentCreators;
     mapping(address => uint256) private _documentCreatorAllowance;
@@ -91,8 +89,8 @@ contract DocumentVerification is IDocumentVerificationManagement {
         if (_isSignerSignedTheDocument(documentHash, msg.sender)) revert SignerAlreadySigned();
 
         // add signature to document
-        Sign memory sign = Sign({ signer: msg.sender, timestamp: block.timestamp });
-        _signatures[documentHash].push(sign);
+        SignatureSet.Sign memory sign = SignatureSet.Sign({ signer: msg.sender, timestamp: block.timestamp });
+        _signatures[documentHash].add(sign);
 
         console.log("Document signed by: %s", msg.sender);
     }
@@ -103,26 +101,7 @@ contract DocumentVerification is IDocumentVerificationManagement {
             revert LateToExecute({ executeTime: document.verificationDeadline });
         if (!_isSignerSignedTheDocument(documentHash, msg.sender)) revert SignerDidNotSigned();
 
-        Sign[] memory signatures = _signatures[documentHash];
-        uint256 signerIndex = _getSignedSignerIndex(signatures, msg.sender);
-
-        console.log("Before pop");
-        for (uint256 i = 0; i < _signatures[documentHash].length; i++) {
-            console.log(_signatures[documentHash][i].signer);
-        }
-
-        // assign latest sign to slot which is going to be deleted
-        uint256 latestItemIndex = _signatures[documentHash].length - 1;
-        _signatures[documentHash][signerIndex] = _signatures[documentHash][latestItemIndex];
-
-        // then delete latest sign
-        _signatures[documentHash].pop();
-        console.log("Document sign revoked by: %s", msg.sender);
-
-        console.log("After pop");
-        for (uint256 i = 0; i < _signatures[documentHash].length; i++) {
-            console.log(_signatures[documentHash][i].signer);
-        }
+        _signatures[documentHash].removeBySigner(msg.sender);
     }
 
     function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external override onlyManagement {
@@ -137,17 +116,17 @@ contract DocumentVerification is IDocumentVerificationManagement {
 
     function isDocumentLegit(bytes32 documentHash) external view returns (bool legit) {
         Document memory document = _documents[documentHash];
-        Sign[] memory signatures = _signatures[documentHash];
+        SignatureSet.SignSet storage signSet = _signatures[documentHash];
 
-        console.log("Signer count: %s", signatures.length);
+        console.log("Signer count: %s", signSet.length());
         console.log("Requested count: %s", document.requestedSigners.length);
 
-        if (signatures.length >= MIN_VOTER_COUNT) {
+        if (signSet.length() >= MIN_VOTER_COUNT) {
             if (document.verificationType == VerificationType.MULTISIG) {
-                legit = _multisigCheck(document, signatures);
+                legit = _multisigCheck(document, signSet);
             }
             if (document.verificationType == VerificationType.VOTING) {
-                legit = _votingCheck(document, signatures);
+                legit = _votingCheck(document, signSet);
             }
         } else legit = false;
     }
@@ -166,8 +145,23 @@ contract DocumentVerification is IDocumentVerificationManagement {
     }
 
     function _isSignerSignedTheDocument(bytes32 documentHash, address signer) private view returns (bool signed) {
-        Sign[] memory signatures = _signatures[documentHash];
-        signed = _getSignedSignerIndex(signatures, signer) != INVALID_INDEX;
+        signed = _signatures[documentHash].containsBySigner(signer);
+    }
+
+    function _multisigCheck(Document memory document, SignatureSet.SignSet storage signSet)
+        private
+        view
+        returns (bool legit)
+    {
+        legit = document.requestedSigners.length == signSet.length();
+    }
+
+    function _votingCheck(Document memory document, SignatureSet.SignSet storage signSet)
+        private
+        view
+        returns (bool legit)
+    {
+        legit = (signSet.length() * 10e18) / document.requestedSigners.length > 5 * 10e17;
     }
 
     function _getRequestedSignerIndex(address[] memory requestedSigners, address signer)
@@ -183,24 +177,5 @@ contract DocumentVerification is IDocumentVerificationManagement {
                 break;
             }
         }
-    }
-
-    function _getSignedSignerIndex(Sign[] memory signatures, address signer) private pure returns (uint256 index) {
-        index = INVALID_INDEX;
-
-        for (uint256 i = 0; i < signatures.length; i++) {
-            if (signatures[i].signer == signer) {
-                index = i;
-                break;
-            }
-        }
-    }
-
-    function _multisigCheck(Document memory document, Sign[] memory signatures) private pure returns (bool legit) {
-        legit = document.requestedSigners.length == signatures.length;
-    }
-
-    function _votingCheck(Document memory document, Sign[] memory signatures) private pure returns (bool legit) {
-        legit = (signatures.length * 10e18) / document.requestedSigners.length > 5 * 10e17;
     }
 }
