@@ -140,6 +140,10 @@ contract DocumentVerification is IDocumentVerificationManagement {
         result = _documentCreators[documentCreator];
     }
 
+    function getDocument(bytes32 documentHash) external view returns (Document memory document) {
+        document = _documents[documentHash];
+    }
+
     function _isSignerRequestedByDocument(bytes32 documentHash, address signer) private view returns (bool requested) {
         requested = _documents[documentHash].requestedSigners.contains(signer);
     }
