@@ -3,10 +3,12 @@ pragma solidity ^0.8.6;
 
 import "./IDocumentVerificationManagement.sol";
 import "./SignatureSet.sol";
+import "./Search.sol";
 import "hardhat/console.sol";
 
 contract DocumentVerification is IDocumentVerificationManagement {
     using SignatureSet for SignatureSet.SignSet;
+    using Search for address[];
 
     error LateToExecute(uint256 executeTime);
     error SignerIsNotRequested();
@@ -17,7 +19,6 @@ contract DocumentVerification is IDocumentVerificationManagement {
     error CallerIsNotDocumentCreator();
     error DocumentCreatorAllowanceNotEnough();
 
-    uint256 public constant INVALID_INDEX = 2**256 - 1;
     uint256 public constant MIN_VOTER_COUNT = 1;
 
     enum VerificationType {
@@ -140,8 +141,7 @@ contract DocumentVerification is IDocumentVerificationManagement {
     }
 
     function _isSignerRequestedByDocument(bytes32 documentHash, address signer) private view returns (bool requested) {
-        address[] memory requestedSigners = _documents[documentHash].requestedSigners;
-        requested = _getRequestedSignerIndex(requestedSigners, signer) != INVALID_INDEX;
+        requested = _documents[documentHash].requestedSigners.contains(signer);
     }
 
     function _isSignerSignedTheDocument(bytes32 documentHash, address signer) private view returns (bool signed) {
@@ -162,20 +162,5 @@ contract DocumentVerification is IDocumentVerificationManagement {
         returns (bool legit)
     {
         legit = (signSet.length() * 10e18) / document.requestedSigners.length > 5 * 10e17;
-    }
-
-    function _getRequestedSignerIndex(address[] memory requestedSigners, address signer)
-        private
-        pure
-        returns (uint256 index)
-    {
-        index = INVALID_INDEX;
-
-        for (uint256 i = 0; i < requestedSigners.length; i++) {
-            if (requestedSigners[i] == signer) {
-                index = i;
-                break;
-            }
-        }
     }
 }
