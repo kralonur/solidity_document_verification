@@ -18,6 +18,8 @@ contract DocumentVerification is IDocumentVerificationManagement {
     error CallerIsNotManagement();
     error CallerIsNotDocumentCreator();
     error DocumentCreatorAllowanceNotEnough();
+    error DocumentIsAlreadyOnVerification();
+    error RequestedSignersAreNotEnough(uint256 sentLength, uint256 requiredLength);
 
     uint256 public constant MIN_VOTER_COUNT = 1;
 
@@ -69,6 +71,12 @@ contract DocumentVerification is IDocumentVerificationManagement {
         VerificationType verificationType,
         address[] calldata requestedSigners
     ) external onlyDocumentCreator {
+        if (_documents[documentHash].verificationCreatedAt != 0) revert DocumentIsAlreadyOnVerification();
+        if (requestedSigners.length < MIN_VOTER_COUNT)
+            revert RequestedSignersAreNotEnough({
+                sentLength: requestedSigners.length,
+                requiredLength: MIN_VOTER_COUNT
+            });
         if (_documentCreatorAllowance[msg.sender] == 0) revert DocumentCreatorAllowanceNotEnough();
 
         Document storage document = _documents[documentHash];
