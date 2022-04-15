@@ -140,5 +140,55 @@ describe.only("DocumentVerification tests", function () {
         ).to.revertedWith(utils.errorDocumentCreatorAllowanceNotEnough());
       });
     });
+
+    describe("Sign document check", function () {
+      it("Should not sign document, if document is invalid", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-INVALID");
+
+        await expect(this.documentVerification.signDocument(documentHash)).to.revertedWith(
+          utils.errorInvalidDocument(),
+        );
+      });
+
+      it("Should not sign document, if signer is not requested", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-1");
+
+        await expect(this.documentVerification.signDocument(documentHash)).to.revertedWith(
+          utils.errorSignerIsNotRequested(),
+        );
+      });
+
+      it("Should sign document", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-1");
+        const signer = this.signers.user2;
+
+        await this.documentVerification.connect(signer).signDocument(documentHash);
+
+        const signers = await this.documentVerification.getSigners(documentHash);
+
+        expect(signers[0].signer).to.equal(signer.address);
+        expect(signers.length).to.equal(1);
+      });
+
+      it("Should not sign document, if signer already signed", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-1");
+        const signer = this.signers.user2;
+
+        await expect(this.documentVerification.connect(signer).signDocument(documentHash)).to.revertedWith(
+          utils.errorSignerAlreadySigned(),
+        );
+      });
+
+      it("Should not sign document, if deadline passed", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-1");
+        const signer = this.signers.user1;
+        const verificationDeadline = (await this.documentVerification.getDocument(documentHash)).verificationDeadline;
+        await utils.simulateTimePassed(utils.daysToSecond(2));
+
+        await expect(this.documentVerification.connect(signer).signDocument(documentHash)).to.revertedWith(
+          utils.errorLateToExecute(verificationDeadline),
+        );
+      });
+    });
   });
 });

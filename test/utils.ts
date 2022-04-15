@@ -70,8 +70,24 @@ function errorDocumentCreatorAllowanceNotEnough(): string {
   return `DocumentCreatorAllowanceNotEnough()`;
 }
 
+function errorInvalidDocument(): string {
+  return `InvalidDocument()`;
+}
+
+function errorSignerIsNotRequested(): string {
+  return `SignerIsNotRequested()`;
+}
+
+function errorSignerAlreadySigned(): string {
+  return `SignerAlreadySigned()`;
+}
+
 function errorRequestedSignersAreNotEnough(sentLength: BigNumberish, requiredLength: BigNumberish): string {
   return `RequestedSignersAreNotEnough(${sentLength}, ${requiredLength})`;
+}
+
+function errorLateToExecute(executeTime: BigNumberish): string {
+  return `LateToExecute(${executeTime})`;
 }
 
 export {
@@ -81,7 +97,11 @@ export {
   errorCallerIsNotDocumentCreator,
   errorDocumentIsAlreadyOnVerification,
   errorDocumentCreatorAllowanceNotEnough,
+  errorInvalidDocument,
+  errorSignerIsNotRequested,
+  errorSignerAlreadySigned,
   errorRequestedSignersAreNotEnough,
+  errorLateToExecute,
 };
 
 // FUNCTIONS
