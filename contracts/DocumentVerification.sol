@@ -101,7 +101,7 @@ contract DocumentVerification is IDocumentVerificationManagement {
             revert LateToExecute({ executeTime: document.verificationDeadline });
         if (!_isSignerSignedTheDocument(documentHash, msg.sender)) revert SignerDidNotSigned();
 
-        _signatures[documentHash].removeBySigner(msg.sender);
+        _signatures[documentHash].remove(msg.sender);
     }
 
     function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external override onlyManagement {
@@ -145,7 +145,7 @@ contract DocumentVerification is IDocumentVerificationManagement {
     }
 
     function _isSignerSignedTheDocument(bytes32 documentHash, address signer) private view returns (bool signed) {
-        signed = _signatures[documentHash].containsBySigner(signer);
+        signed = _signatures[documentHash].contains(signer);
     }
 
     function _multisigCheck(Document memory document, SignatureSet.SignSet storage signSet)

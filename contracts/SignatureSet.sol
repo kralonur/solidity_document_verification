@@ -16,7 +16,7 @@ library SignatureSet {
     }
 
     function add(SignSet storage self, Sign memory value) internal returns (bool) {
-        if (!contains(self, value)) {
+        if (!contains(self, value.signer)) {
             self._values.push(value);
             self._indexes[value.signer] = self._values.length;
             return true;
@@ -25,9 +25,9 @@ library SignatureSet {
         }
     }
 
-    function remove(SignSet storage self, Sign memory value) internal returns (bool) {
+    function remove(SignSet storage self, address signer) internal returns (bool) {
         // We read and store the value's index to prevent multiple reads from the same storage slot
-        uint256 valueIndex = self._indexes[value.signer];
+        uint256 valueIndex = self._indexes[signer];
 
         if (valueIndex != 0) {
             // Equivalent to contains(set, value)
@@ -51,7 +51,7 @@ library SignatureSet {
             self._values.pop();
 
             // Delete the index for the deleted slot
-            delete self._indexes[value.signer];
+            delete self._indexes[signer];
 
             return true;
         } else {
@@ -59,21 +59,11 @@ library SignatureSet {
         }
     }
 
-    function removeBySigner(SignSet storage self, address signer) internal returns (bool) {
-        uint256 index = indexOfSigner(self, signer);
-        Sign memory sign = at(self, index);
-        return remove(self, sign);
-    }
-
-    function contains(SignSet storage self, Sign memory value) internal view returns (bool) {
-        return self._indexes[value.signer] != 0;
-    }
-
-    function containsBySigner(SignSet storage self, address signer) internal view returns (bool) {
+    function contains(SignSet storage self, address signer) internal view returns (bool) {
         return self._indexes[signer] != 0;
     }
 
-    function indexOfSigner(SignSet storage self, address signer) internal view returns (uint256) {
+    function indexOf(SignSet storage self, address signer) internal view returns (uint256) {
         return self._indexes[signer];
     }
 
