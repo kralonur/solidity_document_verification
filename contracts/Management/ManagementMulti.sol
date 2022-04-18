@@ -5,7 +5,11 @@ import "./Controller.sol";
 import "../IDocumentVerificationManagement.sol";
 import "./IManagement.sol";
 
+/**
+ * @title Management contract for multi document verification contract
+ */
 contract ManagementMulti is IManagement, Controller {
+    /// @dev See {IManagement-configureDocumentCreator}
     function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external override onlyController {
         address managementAddress = getDocumentVerificationManagement(msg.sender);
         IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(managementAddress);
@@ -13,6 +17,7 @@ contract ManagementMulti is IManagement, Controller {
         _configureDocumentCreator(managementInterface, documentCreator, allowedAmount);
     }
 
+    /// @dev See {IManagement-removeDocumentCreator}
     function removeDocumentCreator(address documentCreator) external override onlyController {
         address managementAddress = getDocumentVerificationManagement(msg.sender);
         IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(managementAddress);
@@ -20,6 +25,7 @@ contract ManagementMulti is IManagement, Controller {
         managementInterface.removeDocumentCreator(documentCreator);
     }
 
+    /// @dev See {IManagement-increaseDocumentCreatorAllowance}
     function increaseDocumentCreatorAllowance(address documentCreator, uint256 incrementAmount)
         external
         override
@@ -36,6 +42,7 @@ contract ManagementMulti is IManagement, Controller {
         _configureDocumentCreator(managementInterface, documentCreator, newAllowance);
     }
 
+    /// @dev See {IManagement-decreaseDocumentCreatorAllowance}
     function decreaseDocumentCreatorAllowance(address documentCreator, uint256 decrementAmount)
         external
         override
@@ -54,6 +61,7 @@ contract ManagementMulti is IManagement, Controller {
         _configureDocumentCreator(managementInterface, documentCreator, newAllowance);
     }
 
+    /// @dev Internal configure document creator function
     function _configureDocumentCreator(
         IDocumentVerificationManagement managementInterface,
         address documentCreator,

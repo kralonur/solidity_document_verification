@@ -5,21 +5,32 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "../IDocumentVerificationManagement.sol";
 import "./IManagement.sol";
 
+/**
+ * @title Management contract for single document verification contract
+ */
 contract ManagementSingle is IManagement, Ownable {
+    /// Document verification management interface
     IDocumentVerificationManagement public managementInterface;
 
+    /**
+     * @dev Sets `managementInterface`
+     * @param documentManagementInterface document management interface address
+     */
     function setDocumentManagementInterface(address documentManagementInterface) external onlyOwner {
         managementInterface = IDocumentVerificationManagement(documentManagementInterface);
     }
 
+    /// @dev See {IManagement-configureDocumentCreator}
     function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external override onlyOwner {
         _configureDocumentCreator(documentCreator, allowedAmount);
     }
 
+    /// @dev See {IManagement-removeDocumentCreator}
     function removeDocumentCreator(address documentCreator) external override onlyOwner {
         managementInterface.removeDocumentCreator(documentCreator);
     }
 
+    /// @dev See {IManagement-increaseDocumentCreatorAllowance}
     function increaseDocumentCreatorAllowance(address documentCreator, uint256 incrementAmount)
         external
         override
@@ -33,6 +44,7 @@ contract ManagementSingle is IManagement, Ownable {
         _configureDocumentCreator(documentCreator, newAllowance);
     }
 
+    /// @dev See {IManagement-decreaseDocumentCreatorAllowance}
     function decreaseDocumentCreatorAllowance(address documentCreator, uint256 decrementAmount)
         external
         override
@@ -48,6 +60,7 @@ contract ManagementSingle is IManagement, Ownable {
         _configureDocumentCreator(documentCreator, newAllowance);
     }
 
+    /// @dev Internal configure document creator function
     function _configureDocumentCreator(address documentCreator, uint256 allowedAmount) private {
         managementInterface.configureDocumentCreator(documentCreator, allowedAmount);
     }
