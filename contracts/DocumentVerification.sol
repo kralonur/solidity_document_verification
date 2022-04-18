@@ -5,6 +5,9 @@ import "./IDocumentVerificationManagement.sol";
 import "./SignatureSet.sol";
 import "./Search.sol";
 
+/**
+ * @title Document verification contract for verifying contract with their hash values
+ */
 contract DocumentVerification is IDocumentVerificationManagement {
     using SignatureSet for SignatureSet.SignSet;
     using Search for address[];
@@ -22,12 +25,21 @@ contract DocumentVerification is IDocumentVerificationManagement {
 
     uint256 public constant MIN_VOTER_COUNT = 1;
 
+    /// @dev Enum for holding different verification types
     enum VerificationType {
         INVALID,
         MULTISIG,
         VOTING
     }
 
+    /**
+     * @dev This struct holds information about the document
+     * @param verificationCreatedAt Creation time for the verification
+     * @param verificationDeadline Deadline for the signing period
+     * @param documentDeadline Deadline for the document validity
+     * @param verificationType See {VerificationType}
+     * @param requestedSigners List of addresses that are allowed to sign this document
+     */
     struct Document {
         uint128 verificationCreatedAt;
         uint128 verificationDeadline;
@@ -36,12 +48,17 @@ contract DocumentVerification is IDocumentVerificationManagement {
         address[] requestedSigners;
     }
 
+    /// A mapping for storing documents for each hash
     mapping(bytes32 => Document) private _documents;
+    /// A mapping for storing document signatures for each document
     mapping(bytes32 => SignatureSet.SignSet) private _signatures;
 
+    /// A mapping for storing document creator list
     mapping(address => bool) private _documentCreators;
+    /// A mapping for storing document creator allowance
     mapping(address => uint256) private _documentCreatorAllowance;
 
+    /// Management contract address
     address public immutable management;
 
     constructor(address _management) {
@@ -63,6 +80,14 @@ contract DocumentVerification is IDocumentVerificationManagement {
         _;
     }
 
+    /**
+     * @dev Puts document to verification
+     * @param documentHash hash of the document to put on verification
+     * @param verificationDeadline deadline for the signing period
+     * @param documentDeadline deadline for the document validity
+     * @param verificationType see {VerificationType}
+     * @param requestedSigners list of addresses that are allowed to sign this document
+     */
     function putDocumentToVerification(
         bytes32 documentHash,
         uint128 verificationDeadline,
@@ -89,6 +114,10 @@ contract DocumentVerification is IDocumentVerificationManagement {
         _documentCreatorAllowance[msg.sender]--;
     }
 
+    /**
+     * @dev Signs the document (approves it's validity)
+     * @param documentHash hash of the document to put on sign
+     */
     function signDocument(bytes32 documentHash) external validDocument(documentHash) {
         Document memory document = _documents[documentHash];
         if (block.timestamp > document.verificationDeadline)
@@ -101,6 +130,10 @@ contract DocumentVerification is IDocumentVerificationManagement {
         _signatures[documentHash].add(sign);
     }
 
+    /**
+     * @dev Revokes the sign from the document (approves it's validity)
+     * @param documentHash hash of the document to revoke sign from
+     */
     function revokeSign(bytes32 documentHash) external validDocument(documentHash) {
         Document memory document = _documents[documentHash];
         if (block.timestamp > document.verificationDeadline)
@@ -110,16 +143,23 @@ contract DocumentVerification is IDocumentVerificationManagement {
         _signatures[documentHash].remove(msg.sender);
     }
 
+    /// @dev See `IDocumentVerificationManagement-configureDocumentCreator`
     function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external override onlyManagement {
         _documentCreators[documentCreator] = true;
         _documentCreatorAllowance[documentCreator] = allowedAmount;
     }
 
+    /// @dev See `IDocumentVerificationManagement-removeDocumentCreator`
     function removeDocumentCreator(address documentCreator) external override onlyManagement {
         _documentCreators[documentCreator] = false;
         _documentCreatorAllowance[documentCreator] = 0;
     }
 
+    /**
+     * @dev Returns if the document is legit (checks the document  depending on `VerificationType`)
+     * @param documentHash hash of the document to check legit status
+     * @return legit the documents legit result
+     */
     function isDocumentLegit(bytes32 documentHash) external view returns (bool legit) {
         Document memory document = _documents[documentHash];
         SignatureSet.SignSet storage signSet = _signatures[documentHash];
@@ -136,30 +176,60 @@ contract DocumentVerification is IDocumentVerificationManagement {
         }
     }
 
+    /// @dev See `IDocumentVerificationManagement-documentCreatorAllowance`
     function documentCreatorAllowance(address documentCreator) external view override returns (uint256 allowance) {
         allowance = _documentCreatorAllowance[documentCreator];
     }
 
+    /// @dev See `IDocumentVerificationManagement-isDocumentCreator`
     function isDocumentCreator(address documentCreator) external view override returns (bool result) {
         result = _documentCreators[documentCreator];
     }
 
+    /**
+     * @dev Returns the document from given hash
+     * @param documentHash hash of the document
+     * @return document the document
+     */
     function getDocument(bytes32 documentHash) external view returns (Document memory document) {
         document = _documents[documentHash];
     }
 
+    /**
+     * @dev Returns the signers that signed the document
+     * @param documentHash hash of the document
+     * @return signers see {SignatureSet-Sign}
+     */
     function getSigners(bytes32 documentHash) external view returns (SignatureSet.Sign[] memory signers) {
         signers = _signatures[documentHash].values();
     }
 
+    /**
+     * @dev Returns if the given `signer` requested by the document
+     * @param documentHash hash of the document
+     * @param signer the address of the signer to check
+     * @return requested the result of the check
+     */
     function _isSignerRequestedByDocument(bytes32 documentHash, address signer) private view returns (bool requested) {
         requested = _documents[documentHash].requestedSigners.contains(signer);
     }
 
+    /**
+     * @dev Returns if the given `signer` signed the document
+     * @param documentHash hash of the document
+     * @param signer the address of the signer to check
+     * @return signed the result of the check
+     */
     function _isSignerSignedTheDocument(bytes32 documentHash, address signer) private view returns (bool signed) {
         signed = _signatures[documentHash].contains(signer);
     }
 
+    /**
+     * @dev Returns if the document is valid for multi signature standards
+     * @param document see {Document}
+     * @param signSet see {SignatureSet-SignSet}
+     * @return legit the documents legit result
+     */
     function _multisigCheck(Document memory document, SignatureSet.SignSet storage signSet)
         private
         view
@@ -168,6 +238,12 @@ contract DocumentVerification is IDocumentVerificationManagement {
         legit = document.requestedSigners.length == signSet.length();
     }
 
+    /**
+     * @dev Returns if the document is valid for voting standards
+     * @param document see {Document}
+     * @param signSet see {SignatureSet-SignSet}
+     * @return legit the documents legit result
+     */
     function _votingCheck(Document memory document, SignatureSet.SignSet storage signSet)
         private
         view
