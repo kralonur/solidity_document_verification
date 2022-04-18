@@ -1,3 +1,5 @@
+import { BigNumber, BigNumberish } from "ethers";
+import { ethers } from "hardhat";
 import { DocumentVerification__factory, ManagementMulti__factory, ManagementSingle__factory } from "../src/types";
 import { Signers } from "./types";
 
@@ -44,6 +46,46 @@ export {
 
 // ERRORS
 
+function errorLateToExecute(executeTime: BigNumberish): string {
+  return `LateToExecute(${executeTime})`;
+}
+
+function errorSignerIsNotRequested(): string {
+  return `SignerIsNotRequested()`;
+}
+
+function errorSignerAlreadySigned(): string {
+  return `SignerAlreadySigned()`;
+}
+
+function errorSignerDidNotSigned(): string {
+  return `SignerDidNotSigned()`;
+}
+
+function errorInvalidDocument(): string {
+  return `InvalidDocument()`;
+}
+
+function errorCallerIsNotManagement(): string {
+  return `CallerIsNotManagement()`;
+}
+
+function errorCallerIsNotDocumentCreator(): string {
+  return `CallerIsNotDocumentCreator()`;
+}
+
+function errorDocumentCreatorAllowanceNotEnough(): string {
+  return `DocumentCreatorAllowanceNotEnough()`;
+}
+
+function errorDocumentIsAlreadyOnVerification(): string {
+  return `DocumentIsAlreadyOnVerification()`;
+}
+
+function errorRequestedSignersAreNotEnough(sentLength: BigNumberish, requiredLength: BigNumberish): string {
+  return `RequestedSignersAreNotEnough(${sentLength}, ${requiredLength})`;
+}
+
 function errorDocumentCreatorNotFound(): string {
   return `DocumentCreatorNotFound()`;
 }
@@ -56,4 +98,35 @@ function errorCallerIsNotController(): string {
   return `CallerIsNotController()`;
 }
 
-export { errorDocumentCreatorNotFound, errorDecrementAmountExceedsAllowance, errorCallerIsNotController };
+export {
+  errorLateToExecute,
+  errorSignerIsNotRequested,
+  errorSignerAlreadySigned,
+  errorSignerDidNotSigned,
+  errorInvalidDocument,
+  errorCallerIsNotManagement,
+  errorCallerIsNotDocumentCreator,
+  errorDocumentCreatorAllowanceNotEnough,
+  errorDocumentIsAlreadyOnVerification,
+  errorRequestedSignersAreNotEnough,
+  errorDocumentCreatorNotFound,
+  errorDecrementAmountExceedsAllowance,
+  errorCallerIsNotController,
+};
+
+// FUNCTIONS
+
+async function simulateTimePassed(duration: BigNumber) {
+  await ethers.provider.send("evm_increaseTime", [duration.toNumber()]);
+  await ethers.provider.send("evm_mine", []);
+}
+
+async function getCurrentTime() {
+  return BigNumber.from((await ethers.provider.getBlock(await ethers.provider.getBlockNumber())).timestamp);
+}
+
+function daysToSecond(day: BigNumberish) {
+  return BigNumber.from(day).mul(24).mul(60).mul(60);
+}
+
+export { simulateTimePassed, getCurrentTime, daysToSecond };
