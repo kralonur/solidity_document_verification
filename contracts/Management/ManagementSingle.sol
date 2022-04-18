@@ -28,6 +28,8 @@ contract ManagementSingle is IManagement, Ownable {
     /// @dev See {IManagement-removeDocumentCreator}
     function removeDocumentCreator(address documentCreator) external override onlyOwner {
         managementInterface.removeDocumentCreator(documentCreator);
+
+        emit DocumentCreatorRemoved(documentCreator);
     }
 
     /// @dev See {IManagement-increaseDocumentCreatorAllowance}
@@ -63,5 +65,7 @@ contract ManagementSingle is IManagement, Ownable {
     /// @dev Internal configure document creator function
     function _configureDocumentCreator(address documentCreator, uint256 allowedAmount) private {
         managementInterface.configureDocumentCreator(documentCreator, allowedAmount);
+
+        emit DocumentCreatorConfigured(documentCreator, allowedAmount);
     }
 }

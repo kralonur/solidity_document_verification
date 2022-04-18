@@ -23,6 +23,8 @@ contract ManagementMulti is IManagement, Controller {
         IDocumentVerificationManagement managementInterface = IDocumentVerificationManagement(managementAddress);
 
         managementInterface.removeDocumentCreator(documentCreator);
+
+        emit DocumentCreatorRemoved(documentCreator);
     }
 
     /// @dev See {IManagement-increaseDocumentCreatorAllowance}
@@ -68,5 +70,7 @@ contract ManagementMulti is IManagement, Controller {
         uint256 allowedAmount
     ) private {
         managementInterface.configureDocumentCreator(documentCreator, allowedAmount);
+
+        emit DocumentCreatorConfigured(documentCreator, allowedAmount);
     }
 }

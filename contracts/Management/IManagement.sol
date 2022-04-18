@@ -6,6 +6,18 @@ interface IManagement {
     error DecrementAmountExceedsAllowance();
 
     /**
+     * @dev Emitted when the document creator configured
+     * @param documentCreator The address of the document creator
+     * @param allowedAmount The allowed amount for the document creator
+     */
+    event DocumentCreatorConfigured(address indexed documentCreator, uint256 allowedAmount);
+    /**
+     * @dev Emitted when the document creator removed
+     * @param documentCreator The address of the document creator
+     */
+    event DocumentCreatorRemoved(address indexed documentCreator);
+
+    /**
      * @dev Adds document creator with given `allowedAmount`
      * @param documentCreator document creator address
      * @param allowedAmount allowed document amount for document creator
