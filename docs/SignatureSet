@@ -1,0 +1,64 @@
+# Solidity API
+
+## SignatureSet
+
+### Sign
+
+```solidity
+struct Sign {
+  address signer;
+  uint256 timestamp;
+}
+```
+
+### SignSet
+
+```solidity
+struct SignSet {
+  struct SignatureSet.Sign[] _values;
+  mapping(address &#x3D;&gt; uint256) _indexes;
+}
+```
+
+### add
+
+```solidity
+function add(struct SignatureSet.SignSet self, struct SignatureSet.Sign value) internal returns (bool)
+```
+
+### remove
+
+```solidity
+function remove(struct SignatureSet.SignSet self, address signer) internal returns (bool)
+```
+
+### contains
+
+```solidity
+function contains(struct SignatureSet.SignSet self, address signer) internal view returns (bool)
+```
+
+### indexOf
+
+```solidity
+function indexOf(struct SignatureSet.SignSet self, address signer) internal view returns (uint256)
+```
+
+### length
+
+```solidity
+function length(struct SignatureSet.SignSet self) internal view returns (uint256)
+```
+
+### at
+
+```solidity
+function at(struct SignatureSet.SignSet self, uint256 index) internal view returns (struct SignatureSet.Sign)
+```
+
+### values
+
+```solidity
+function values(struct SignatureSet.SignSet self) internal view returns (struct SignatureSet.Sign[])
+```
+

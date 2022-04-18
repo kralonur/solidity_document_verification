@@ -3,6 +3,7 @@ import "@nomiclabs/hardhat-etherscan";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
+import "solidity-docgen";
 
 import "./tasks/accounts";
 
@@ -125,6 +126,9 @@ const config: HardhatUserConfig = {
   typechain: {
     outDir: "src/types",
     target: "ethers-v5",
+  },
+  docgen: {
+    pages: "items",
   },
 };
 
