@@ -129,7 +129,6 @@ const config: HardhatUserConfig = {
   },
   docgen: {
     pages: "items",
-    pageExtension: ".md",
   },
 };
 
