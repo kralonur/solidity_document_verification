@@ -4,7 +4,6 @@ pragma solidity ^0.8.6;
 import "./IDocumentVerificationManagement.sol";
 import "./SignatureSet.sol";
 import "./Search.sol";
-import "hardhat/console.sol";
 
 contract DocumentVerification is IDocumentVerificationManagement {
     using SignatureSet for SignatureSet.SignSet;
@@ -100,8 +99,6 @@ contract DocumentVerification is IDocumentVerificationManagement {
         // add signature to document
         SignatureSet.Sign memory sign = SignatureSet.Sign({ signer: msg.sender, timestamp: block.timestamp });
         _signatures[documentHash].add(sign);
-
-        console.log("Document signed by: %s", msg.sender);
     }
 
     function revokeSign(bytes32 documentHash) external validDocument(documentHash) {
@@ -124,9 +121,6 @@ contract DocumentVerification is IDocumentVerificationManagement {
     function isDocumentLegit(bytes32 documentHash) external view returns (bool legit) {
         Document memory document = _documents[documentHash];
         SignatureSet.SignSet storage signSet = _signatures[documentHash];
-
-        console.log("Signer count: %s", signSet.length());
-        console.log("Requested count: %s", document.requestedSigners.length);
 
         if (block.timestamp < document.documentDeadline) {
             if (signSet.length() >= MIN_VOTER_COUNT) {
