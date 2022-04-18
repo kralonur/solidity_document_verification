@@ -46,32 +46,8 @@ export {
 
 // ERRORS
 
-function errorDocumentCreatorNotFound(): string {
-  return `DocumentCreatorNotFound()`;
-}
-
-function errorDecrementAmountExceedsAllowance(): string {
-  return `DecrementAmountExceedsAllowance()`;
-}
-
-function errorCallerIsNotController(): string {
-  return `CallerIsNotController()`;
-}
-
-function errorCallerIsNotDocumentCreator(): string {
-  return `CallerIsNotDocumentCreator()`;
-}
-
-function errorDocumentIsAlreadyOnVerification(): string {
-  return `DocumentIsAlreadyOnVerification()`;
-}
-
-function errorDocumentCreatorAllowanceNotEnough(): string {
-  return `DocumentCreatorAllowanceNotEnough()`;
-}
-
-function errorInvalidDocument(): string {
-  return `InvalidDocument()`;
+function errorLateToExecute(executeTime: BigNumberish): string {
+  return `LateToExecute(${executeTime})`;
 }
 
 function errorSignerIsNotRequested(): string {
@@ -86,27 +62,56 @@ function errorSignerDidNotSigned(): string {
   return `SignerDidNotSigned()`;
 }
 
+function errorInvalidDocument(): string {
+  return `InvalidDocument()`;
+}
+
+function errorCallerIsNotManagement(): string {
+  return `CallerIsNotManagement()`;
+}
+
+function errorCallerIsNotDocumentCreator(): string {
+  return `CallerIsNotDocumentCreator()`;
+}
+
+function errorDocumentCreatorAllowanceNotEnough(): string {
+  return `DocumentCreatorAllowanceNotEnough()`;
+}
+
+function errorDocumentIsAlreadyOnVerification(): string {
+  return `DocumentIsAlreadyOnVerification()`;
+}
+
 function errorRequestedSignersAreNotEnough(sentLength: BigNumberish, requiredLength: BigNumberish): string {
   return `RequestedSignersAreNotEnough(${sentLength}, ${requiredLength})`;
 }
 
-function errorLateToExecute(executeTime: BigNumberish): string {
-  return `LateToExecute(${executeTime})`;
+function errorDocumentCreatorNotFound(): string {
+  return `DocumentCreatorNotFound()`;
+}
+
+function errorDecrementAmountExceedsAllowance(): string {
+  return `DecrementAmountExceedsAllowance()`;
+}
+
+function errorCallerIsNotController(): string {
+  return `CallerIsNotController()`;
 }
 
 export {
-  errorDocumentCreatorNotFound,
-  errorDecrementAmountExceedsAllowance,
-  errorCallerIsNotController,
-  errorCallerIsNotDocumentCreator,
-  errorDocumentIsAlreadyOnVerification,
-  errorDocumentCreatorAllowanceNotEnough,
-  errorInvalidDocument,
+  errorLateToExecute,
   errorSignerIsNotRequested,
   errorSignerAlreadySigned,
   errorSignerDidNotSigned,
+  errorInvalidDocument,
+  errorCallerIsNotManagement,
+  errorCallerIsNotDocumentCreator,
+  errorDocumentCreatorAllowanceNotEnough,
+  errorDocumentIsAlreadyOnVerification,
   errorRequestedSignersAreNotEnough,
-  errorLateToExecute,
+  errorDocumentCreatorNotFound,
+  errorDecrementAmountExceedsAllowance,
+  errorCallerIsNotController,
 };
 
 // FUNCTIONS

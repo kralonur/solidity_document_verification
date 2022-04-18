@@ -44,6 +44,12 @@ describe.only("DocumentVerification tests", function () {
       it("Should not put document to verification, if requested signers are not enough", async function () {
         const documentCreator = this.signers.user1;
         const allowance = 1;
+
+        // should not configure document creator, if caller is not management
+        await expect(
+          this.documentVerification.configureDocumentCreator(documentCreator.address, allowance),
+        ).to.revertedWith(utils.errorCallerIsNotManagement());
+
         await this.managementSingle.configureDocumentCreator(documentCreator.address, allowance);
 
         const documentHash = ethers.utils.id("DOCUMENT-1");
