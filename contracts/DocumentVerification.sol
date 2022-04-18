@@ -130,14 +130,16 @@ contract DocumentVerification is IDocumentVerificationManagement {
         console.log("Signer count: %s", signSet.length());
         console.log("Requested count: %s", document.requestedSigners.length);
 
-        if (signSet.length() >= MIN_VOTER_COUNT) {
-            if (document.verificationType == VerificationType.MULTISIG) {
-                legit = _multisigCheck(document, signSet);
+        if (block.timestamp < document.documentDeadline) {
+            if (signSet.length() >= MIN_VOTER_COUNT) {
+                if (document.verificationType == VerificationType.MULTISIG) {
+                    legit = _multisigCheck(document, signSet);
+                }
+                if (document.verificationType == VerificationType.VOTING) {
+                    legit = _votingCheck(document, signSet);
+                }
             }
-            if (document.verificationType == VerificationType.VOTING) {
-                legit = _votingCheck(document, signSet);
-            }
-        } else legit = false;
+        }
     }
 
     function documentCreatorAllowance(address documentCreator) external view override returns (uint256 allowance) {

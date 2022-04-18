@@ -261,5 +261,125 @@ describe.only("DocumentVerification tests", function () {
         );
       });
     });
+
+    describe("Document legit check", function () {
+      before(async function () {
+        const documentCreator = this.signers.user1;
+
+        await this.managementSingle.configureDocumentCreator(documentCreator.address, 2);
+
+        let documentHash = ethers.utils.id("DOCUMENT-3");
+        const verificationDeadline = (await utils.getCurrentTime()).add(utils.daysToSecond(1));
+        const documentDeadline = verificationDeadline;
+        let verificationType = 1; //VerificationType.MULTISIG
+        const requestedSigners = [this.signers.admin.address, this.signers.user1.address, this.signers.user2.address];
+
+        // put document to verification for multisig check
+        await this.documentVerification
+          .connect(documentCreator)
+          .putDocumentToVerification(
+            documentHash,
+            verificationDeadline,
+            documentDeadline,
+            verificationType,
+            requestedSigners,
+          );
+
+        documentHash = ethers.utils.id("DOCUMENT-4");
+        verificationType = 2; //VerificationType.VOTING
+
+        // put document to verification for voting check
+        await this.documentVerification
+          .connect(documentCreator)
+          .putDocumentToVerification(
+            documentHash,
+            verificationDeadline,
+            documentDeadline,
+            verificationType,
+            requestedSigners,
+          );
+      });
+
+      it("Should not give legit result(multisig), when signer count 0/3", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-3");
+
+        expect(await this.documentVerification.isDocumentLegit(documentHash)).to.equal(false);
+      });
+
+      it("Should not give legit result(voting), when signer count 0/3", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-4");
+
+        expect(await this.documentVerification.isDocumentLegit(documentHash)).to.equal(false);
+      });
+
+      it("Should not give legit result(multisig), when signer count 1/3", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-3");
+        const signer = this.signers.admin;
+
+        await this.documentVerification.connect(signer).signDocument(documentHash);
+
+        expect(await this.documentVerification.isDocumentLegit(documentHash)).to.equal(false);
+      });
+
+      it("Should not give legit result(voting), when signer count 1/3", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-4");
+        const signer = this.signers.admin;
+
+        await this.documentVerification.connect(signer).signDocument(documentHash);
+
+        expect(await this.documentVerification.isDocumentLegit(documentHash)).to.equal(false);
+      });
+
+      it("Should not give legit result(multisig), when signer count 2/3", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-3");
+        const signer = this.signers.user1;
+
+        await this.documentVerification.connect(signer).signDocument(documentHash);
+
+        expect(await this.documentVerification.isDocumentLegit(documentHash)).to.equal(false);
+      });
+
+      it("Should give legit result(voting), when signer count 2/3", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-4");
+        const signer = this.signers.user1;
+
+        await this.documentVerification.connect(signer).signDocument(documentHash);
+
+        expect(await this.documentVerification.isDocumentLegit(documentHash)).to.equal(true);
+      });
+
+      it("Should give legit result(multisig), when signer count 3/3", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-3");
+        const signer = this.signers.user2;
+
+        await this.documentVerification.connect(signer).signDocument(documentHash);
+
+        expect(await this.documentVerification.isDocumentLegit(documentHash)).to.equal(true);
+      });
+
+      it("Should give legit result(voting), when signer count 3/3", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-4");
+        const signer = this.signers.user2;
+
+        await this.documentVerification.connect(signer).signDocument(documentHash);
+
+        expect(await this.documentVerification.isDocumentLegit(documentHash)).to.equal(true);
+      });
+
+      it("Should not give legit result(multisig), when document deadline is passed", async function () {
+        // time passed over document deadline
+        await utils.simulateTimePassed(utils.daysToSecond(2));
+
+        const documentHash = ethers.utils.id("DOCUMENT-3");
+
+        expect(await this.documentVerification.isDocumentLegit(documentHash)).to.equal(false);
+      });
+
+      it("Should not legit result(voting), when document deadline is passed", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-4");
+
+        expect(await this.documentVerification.isDocumentLegit(documentHash)).to.equal(false);
+      });
+    });
   });
 });
