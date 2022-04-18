@@ -61,6 +61,25 @@ contract DocumentVerification is IDocumentVerificationManagement {
     /// Management contract address
     address public immutable management;
 
+    /**
+     * @dev Emitted when the document put on verification
+     * @param documentHash The hash of the document
+     * @param documentCreator The document creator address that put document on verification
+     */
+    event DocumentPutOnVerification(bytes32 indexed documentHash, address indexed documentCreator);
+    /**
+     * @dev Emitted when the document signed
+     * @param documentHash The hash of the document
+     * @param signer The document signer address
+     */
+    event DocumentSigned(bytes32 indexed documentHash, address indexed signer);
+    /**
+     * @dev Emitted when the document signed
+     * @param documentHash The hash of the document
+     * @param signRevoker The document sign revoker address
+     */
+    event DocumentSignRevoked(bytes32 indexed documentHash, address indexed signRevoker);
+
     constructor(address _management) {
         management = _management;
     }
@@ -112,6 +131,8 @@ contract DocumentVerification is IDocumentVerificationManagement {
         document.requestedSigners = requestedSigners;
 
         _documentCreatorAllowance[msg.sender]--;
+
+        emit DocumentPutOnVerification(documentHash, msg.sender);
     }
 
     /**
@@ -128,6 +149,8 @@ contract DocumentVerification is IDocumentVerificationManagement {
         // add signature to document
         SignatureSet.Sign memory sign = SignatureSet.Sign({ signer: msg.sender, timestamp: block.timestamp });
         _signatures[documentHash].add(sign);
+
+        emit DocumentSigned(documentHash, msg.sender);
     }
 
     /**
@@ -141,6 +164,8 @@ contract DocumentVerification is IDocumentVerificationManagement {
         if (!_isSignerSignedTheDocument(documentHash, msg.sender)) revert SignerDidNotSigned();
 
         _signatures[documentHash].remove(msg.sender);
+
+        emit DocumentSignRevoked(documentHash, msg.sender);
     }
 
     /// @dev See `IDocumentVerificationManagement-configureDocumentCreator`
