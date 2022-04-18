@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 import { Signers } from "../types";
 import * as utils from "../utils";
 
-describe.only("DocumentVerification tests", function () {
+describe("DocumentVerification tests", function () {
   before(async function () {
     this.signers = {} as Signers;
 
