@@ -6,6 +6,7 @@ import "solidity-coverage";
 import "solidity-docgen";
 
 import "./tasks/accounts";
+import "./tasks/verify";
 
 import { resolve } from "path";
 
