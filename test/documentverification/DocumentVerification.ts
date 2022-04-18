@@ -190,5 +190,76 @@ describe.only("DocumentVerification tests", function () {
         );
       });
     });
+
+    describe("Revoke sign check", function () {
+      before(async function () {
+        const documentCreator = this.signers.user1;
+
+        await this.managementSingle.configureDocumentCreator(documentCreator.address, 1);
+
+        const documentHash = ethers.utils.id("DOCUMENT-2");
+        const verificationDeadline = (await utils.getCurrentTime()).add(utils.daysToSecond(1));
+        const documentDeadline = verificationDeadline;
+        const verificationType = 1;
+        const requestedSigners = [this.signers.user1.address, this.signers.user2.address];
+
+        await this.documentVerification
+          .connect(documentCreator)
+          .putDocumentToVerification(
+            documentHash,
+            verificationDeadline,
+            documentDeadline,
+            verificationType,
+            requestedSigners,
+          );
+      });
+
+      it("Should not revoke sign, if document is invalid", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-INVALID");
+
+        await expect(this.documentVerification.revokeSign(documentHash)).to.revertedWith(utils.errorInvalidDocument());
+      });
+
+      it("Should not revoke sign, if signer did not signed", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-2");
+        const signer = this.signers.user2;
+
+        await expect(this.documentVerification.connect(signer).revokeSign(documentHash)).to.revertedWith(
+          utils.errorSignerDidNotSigned(),
+        );
+      });
+
+      it("Should revoke sign", async function () {
+        // first, sign document and check
+        const documentHash = ethers.utils.id("DOCUMENT-2");
+        const signer = this.signers.user2;
+
+        await this.documentVerification.connect(signer).signDocument(documentHash);
+
+        let signers = await this.documentVerification.getSigners(documentHash);
+
+        expect(signers[0].signer).to.equal(signer.address);
+        expect(signers.length).to.equal(1);
+
+        // then, revoke sign and check
+
+        await this.documentVerification.connect(signer).revokeSign(documentHash);
+
+        signers = await this.documentVerification.getSigners(documentHash);
+
+        expect(signers.length).to.equal(0);
+      });
+
+      it("Should not revoke sign, if deadline passed", async function () {
+        const documentHash = ethers.utils.id("DOCUMENT-2");
+        const signer = this.signers.user2;
+        const verificationDeadline = (await this.documentVerification.getDocument(documentHash)).verificationDeadline;
+        await utils.simulateTimePassed(utils.daysToSecond(2));
+
+        await expect(this.documentVerification.connect(signer).revokeSign(documentHash)).to.revertedWith(
+          utils.errorLateToExecute(verificationDeadline),
+        );
+      });
+    });
   });
 });

@@ -82,6 +82,10 @@ function errorSignerAlreadySigned(): string {
   return `SignerAlreadySigned()`;
 }
 
+function errorSignerDidNotSigned(): string {
+  return `SignerDidNotSigned()`;
+}
+
 function errorRequestedSignersAreNotEnough(sentLength: BigNumberish, requiredLength: BigNumberish): string {
   return `RequestedSignersAreNotEnough(${sentLength}, ${requiredLength})`;
 }
@@ -100,6 +104,7 @@ export {
   errorInvalidDocument,
   errorSignerIsNotRequested,
   errorSignerAlreadySigned,
+  errorSignerDidNotSigned,
   errorRequestedSignersAreNotEnough,
   errorLateToExecute,
 };
