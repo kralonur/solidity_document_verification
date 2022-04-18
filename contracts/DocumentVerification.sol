@@ -114,12 +114,10 @@ contract DocumentVerification is IDocumentVerificationManagement {
     }
 
     function configureDocumentCreator(address documentCreator, uint256 allowedAmount) external override onlyManagement {
-        if (!_documentCreators[documentCreator]) _documentCreators[documentCreator] = true;
         _documentCreatorAllowance[documentCreator] = allowedAmount;
     }
 
     function removeDocumentCreator(address documentCreator) external override onlyManagement {
-        if (_documentCreators[documentCreator]) _documentCreators[documentCreator] = false;
         _documentCreatorAllowance[documentCreator] = 0;
     }
 
