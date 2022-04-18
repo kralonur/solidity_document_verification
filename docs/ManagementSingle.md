@@ -1,6 +1,26 @@
 # Solidity API
 
-## ManagementMulti
+## ManagementSingle
+
+### managementInterface
+
+```solidity
+contract IDocumentVerificationManagement managementInterface
+```
+
+Document verification management interface
+
+### setDocumentManagementInterface
+
+```solidity
+function setDocumentManagementInterface(address documentManagementInterface) external
+```
+
+_Sets &#x60;managementInterface&#x60;_
+
+| Name                        | Type    | Description                           |
+| --------------------------- | ------- | ------------------------------------- |
+| documentManagementInterface | address | document management interface address |
 
 ### configureDocumentCreator
 
@@ -34,11 +54,10 @@ function decreaseDocumentCreatorAllowance(address documentCreator, uint256 decre
 
 _See {IManagement-decreaseDocumentCreatorAllowance}_
 
-### _configureDocumentCreator
+### \_configureDocumentCreator
 
 ```solidity
-function _configureDocumentCreator(contract IDocumentVerificationManagement managementInterface, address documentCreator, uint256 allowedAmount) private
+function _configureDocumentCreator(address documentCreator, uint256 allowedAmount) private
 ```
 
 _Internal configure document creator function_
-

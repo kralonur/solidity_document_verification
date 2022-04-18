@@ -8,7 +8,7 @@
 error CallerIsNotController()
 ```
 
-### _controllers
+### \_controllers
 
 ```solidity
 mapping(address &#x3D;&gt; address) _controllers
@@ -22,9 +22,9 @@ event ControllerConfigured(address controller, address documentVerificationManag
 
 _Emitted when the controller configured_
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| controller | address | The address of the controller |
+| Name                           | Type    | Description                                         |
+| ------------------------------ | ------- | --------------------------------------------------- |
+| controller                     | address | The address of the controller                       |
 | documentVerificationManagement | address | The address of the document verification management |
 
 ### ControllerRemoved
@@ -35,8 +35,8 @@ event ControllerRemoved(address controller)
 
 _Emitted when the controller removed_
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name       | Type    | Description                   |
+| ---------- | ------- | ----------------------------- |
 | controller | address | The address of the controller |
 
 ### onlyController
@@ -53,9 +53,9 @@ function configureController(address controller, address documentVerificationMan
 
 _Sets document verification management for the controller_
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| controller | address | Controller address |
+| Name                           | Type    | Description                            |
+| ------------------------------ | ------- | -------------------------------------- |
+| controller                     | address | Controller address                     |
 | documentVerificationManagement | address | documentVerificationManagement address |
 
 ### removeController
@@ -66,8 +66,8 @@ function removeController(address controller) external
 
 _Removes document verification management from the controller_
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name       | Type    | Description        |
+| ---------- | ------- | ------------------ |
 | controller | address | Controller address |
 
 ### getDocumentVerificationManagement
@@ -78,11 +78,10 @@ function getDocumentVerificationManagement(address controller) public view retur
 
 _Returns document verification management for controller_
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name       | Type    | Description        |
+| ---------- | ------- | ------------------ |
 | controller | address | Controller address |
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name                           | Type    | Description                              |
+| ------------------------------ | ------- | ---------------------------------------- |
 | documentVerificationManagement | address | document verification management address |
-

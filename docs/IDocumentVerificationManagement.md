@@ -10,10 +10,10 @@ function configureDocumentCreator(address documentCreator, uint256 allowedAmount
 
 _Adds document creator with given &#x60;allowedAmount&#x60;_
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| documentCreator | address | document creator address |
-| allowedAmount | uint256 | allowed document amount for document creator |
+| Name            | Type    | Description                                  |
+| --------------- | ------- | -------------------------------------------- |
+| documentCreator | address | document creator address                     |
+| allowedAmount   | uint256 | allowed document amount for document creator |
 
 ### removeDocumentCreator
 
@@ -23,8 +23,8 @@ function removeDocumentCreator(address documentCreator) external
 
 _Removes document creator_
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name            | Type    | Description              |
+| --------------- | ------- | ------------------------ |
 | documentCreator | address | document creator address |
 
 ### documentCreatorAllowance
@@ -35,12 +35,12 @@ function documentCreatorAllowance(address documentCreator) external view returns
 
 _Returns document creator allowance_
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name            | Type    | Description              |
+| --------------- | ------- | ------------------------ |
 | documentCreator | address | document creator address |
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name      | Type    | Description                |
+| --------- | ------- | -------------------------- |
 | allowance | uint256 | document creator allowance |
 
 ### isDocumentCreator
@@ -51,11 +51,10 @@ function isDocumentCreator(address documentCreator) external view returns (bool 
 
 _Returns if the given address document creator_
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name            | Type    | Description              |
+| --------------- | ------- | ------------------------ |
 | documentCreator | address | document creator address |
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name   | Type | Description             |
+| ------ | ---- | ----------------------- |
 | result | bool | document creator result |
-
