@@ -4,6 +4,7 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "solidity-docgen";
+import "hardhat-tracer";
 
 import "./tasks/accounts";
 import "./tasks/verify";
@@ -83,6 +84,7 @@ const config: HardhatUserConfig = {
       arbitrumOne: process.env.ARBISCAN_API_KEY,
       avalanche: process.env.SNOWTRACE_API_KEY,
       bsc: process.env.BSCSCAN_API_KEY,
+      bscTestnet: process.env.BSCSCAN_API_KEY,
       mainnet: process.env.ETHERSCAN_API_KEY,
       polygonMumbai: process.env.POLYGONSCAN_API_KEY,
       rinkeby: process.env.ETHERSCAN_API_KEY,
