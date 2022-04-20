@@ -1,6 +1,14 @@
-# Project Title
+# Document Verification Using Solidity
 
-Info about the project.
+This project allows verifying documents using their hashes. So as an example documents hash could be generated using keccak256 then this hash would be add to contract and signed by requested addresses.
+
+**NOTES**
+
+Contracts are put on verification only by document creators.
+Document creators allowance set on Management contracts.
+ManagementSingle contract only for managing single DocumentVerification contract.
+ManagementMulti contract for managing multi DocumentVerification contracts.
+For managing multiple different DocumentVerification contracts controllers are used in ManagementMulti contract, each controller can only control 1 DocumentVerification contract
 
 ## Installation
 
@@ -61,6 +69,14 @@ Delete the smart contract artifacts, the coverage reports and the Hardhat cache:
 yarn clean
 ```
 
+### Docs
+
+Create documentation for the contracts (in "docs" folder):
+
+```bash
+yarn docgen
+```
+
 ### Available Tasks
 
 To see available tasks from Hardhat:
@@ -89,6 +105,53 @@ Generate the code coverage report:
 
 ```bash
 yarn coverage
+```
+
+## Deployment
+
+### Deployment
+
+To deploy this project first change those fields on your `.env` file:
+
+`MNEMONIC="your mnemomic"` that should be your REAL mnemonic that you use on chain.
+
+`RUN_OPTIMIZER="true"` that is recommended for gas fees optimization.
+
+Then set your infura or alchemy api key (depending on chain you want to deploy).
+
+**Deployment arguments**
+
+You have to create deploy argument json file, using examples on `deployargs` folder.
+So first create a json file using example: `deploy${ContractName}Args.example.json` file, new json file should be exact same name but without `.example` in it's file name. Example: `deploy${ContractName}Args.json`, then fill the fields.
+
+**Deployment commands**
+
+```bash
+yarn deploy:${contractname} --network ${networkToDeploy}
+```
+
+Example:
+
+```bash
+yarn deploy:token --network rinkeby
+```
+
+### Verification
+
+To verify the contract first change block explorer api key on your `.env` file, depending on your network.
+For example, for ethereum network:
+`ETHERSCAN_API_KEY="etherscan_api_key"`.
+
+**Verification commands**
+
+```bash
+yarn verify:${contractname} --address ${deployed_contract_address} --network ${network}
+```
+
+Example:
+
+```bash
+yarn verify:token --address ${deployed_contract_address} --network rinkeby
 ```
 
 ## Contributing
